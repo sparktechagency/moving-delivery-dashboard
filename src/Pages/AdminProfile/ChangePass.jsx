@@ -8,7 +8,7 @@ function ChangePass() {
 
   return (
     <div>
-      <p className="mb-5 text-xl font-bold text-center text-primary">
+      <p className="mb-5 text-xl font-bold text-center text-white">
         Change Password
       </p>
       <form className="space-y-4 w-auto md:w-[480px]">
