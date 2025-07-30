@@ -3,9 +3,9 @@ import { EyeOutlined } from "@ant-design/icons";
 import { IoIosArrowBack, IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { MdBlock } from "react-icons/md";
 import userImage from "../../assets/image/admin.jpg";
+import { useGetAllUsersQuery } from "../../features/api/userManagementApi";
 
 function UserManagement() {
-  // Generate more sample data
   const initialUsers = [
     {
       id: "#01",
@@ -91,134 +91,13 @@ function UserManagement() {
       date: "15 Aug 2024",
       accType: "User",
     },
-    {
-      id: "#13",
-      name: "Charlotte White",
-      email: "charlotte.white@example.com",
-      date: "28 Aug 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#14",
-      name: "Lucas Harris",
-      email: "lucas.harris@example.com",
-      date: "09 Sep 2024",
-      accType: "User",
-    },
-    {
-      id: "#15",
-      name: "Amelia Martin",
-      email: "amelia.martin@example.com",
-      date: "20 Sep 2024",
-      accType: "User",
-    },
-    {
-      id: "#16",
-      name: "Elijah Thompson",
-      email: "elijah.thompson@example.com",
-      date: "01 Oct 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#17",
-      name: "Harper Garcia",
-      email: "harper.garcia@example.com",
-      date: "12 Oct 2024",
-      accType: "User",
-    },
-    {
-      id: "#18",
-      name: "William Martinez",
-      email: "william.martinez@example.com",
-      date: "24 Oct 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#19",
-      name: "Evelyn Robinson",
-      email: "evelyn.robinson@example.com",
-      date: "04 Nov 2024",
-      accType: "User",
-    },
-    {
-      id: "#20",
-      name: "Henry Clark",
-      email: "henry.clark@example.com",
-      date: "16 Nov 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#21",
-      name: "Abigail Rodriguez",
-      email: "abigail.rodriguez@example.com",
-      date: "28 Nov 2024",
-      accType: "User",
-    },
-    {
-      id: "#22",
-      name: "Sebastian Lewis",
-      email: "sebastian.lewis@example.com",
-      date: "09 Dec 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#23",
-      name: "Ella Lee",
-      email: "ella.lee@example.com",
-      date: "20 Dec 2024",
-      accType: "User",
-    },
-    {
-      id: "#24",
-      name: "Alexander Walker",
-      email: "alexander.walker@example.com",
-      date: "31 Dec 2024",
-      accType: "User",
-    },
-    {
-      id: "#25",
-      name: "Avery Hall",
-      email: "avery.hall@example.com",
-      date: "11 Jan 2025",
-      accType: "Driver",
-    },
-    {
-      id: "#26",
-      name: "Jack Allen",
-      email: "jack.allen@example.com",
-      date: "22 Jan 2025",
-      accType: "User",
-    },
-    {
-      id: "#27",
-      name: "Scarlett Young",
-      email: "scarlett.young@example.com",
-      date: "02 Feb 2025",
-      accType: "User",
-    },
-    {
-      id: "#28",
-      name: "Levi Hernandez",
-      email: "levi.hernandez@example.com",
-      date: "14 Feb 2025",
-      accType: "Driver",
-    },
-    {
-      id: "#29",
-      name: "Grace King",
-      email: "grace.king@example.com",
-      date: "25 Feb 2025",
-      accType: "User",
-    },
-    {
-      id: "#30",
-      name: "Matthew Wright",
-      email: "matthew.wright@example.com",
-      date: "09 Mar 2025",
-      accType: "User",
-    },
+ 
+
+   
   ];
 
+  const {data,isloading,error} = useGetAllUsersQuery()
+  console.log(data)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalBlock, setIsModalBlock] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null); // state to hold the selected user for modal
@@ -456,6 +335,7 @@ function UserManagement() {
       )}
     </>
   );
+
 }
 
 export default UserManagement;

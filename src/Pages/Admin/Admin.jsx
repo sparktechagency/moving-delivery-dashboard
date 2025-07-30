@@ -14,8 +14,8 @@ const adminData = [
 const AdminManagementPage = () => {
   const [admins, setAdmins] = useState(adminData);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // Flag to track edit mode
-  const [currentAdmin, setCurrentAdmin] = useState(null); // Store current admin data for editing
+  const [isEditing, setIsEditing] = useState(false); 
+  const [currentAdmin, setCurrentAdmin] = useState(null); 
 
   const [newAdmin, setNewAdmin] = useState({
     name: "",
@@ -98,8 +98,8 @@ const AdminManagementPage = () => {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-2xl font-semibold mb-4">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="mb-4 text-2xl font-semibold">
           Administrator management
         </h3>
 

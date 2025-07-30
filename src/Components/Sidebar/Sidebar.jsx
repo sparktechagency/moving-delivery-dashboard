@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { AiOutlineSetting } from "react-icons/ai";
-import { FiUser, FiLogOut } from "react-icons/fi";
+import { FiLogOut } from "react-icons/fi";
 import { BiChevronDown } from "react-icons/bi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MdDashboard, MdPrivacyTip } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { RiMoneyDollarCircleLine, RiTerminalWindowLine } from "react-icons/ri";
@@ -11,12 +10,17 @@ import { PiUsers } from "react-icons/pi";
 import { IoNewspaper } from "react-icons/io5";
 import { GrUserSettings } from "react-icons/gr";
 import { CiUser } from "react-icons/ci";
+import { useDispatch } from "react-redux";
+import { logout } from "../../features/slices/authSlice";
 
 
 const Sidebar = ({ closeDrawer }) => {
   const [active, setActive] = useState("Dashboard");
   const [openDropdown, setOpenDropdown] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+
+   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -91,6 +95,13 @@ const Sidebar = ({ closeDrawer }) => {
 
   const filteredItems = filterMenuItems(menuItems);
 
+
+  
+  const handleLogout = () => {
+    dispatch(logout());       
+    navigate('/sign-in');     
+  };
+
   return (
     <div className="flex flex-col h-full p-3 bg-white w-72">
         <div className="mx-auto">
@@ -150,12 +161,12 @@ const Sidebar = ({ closeDrawer }) => {
           </div>
         ))}
       </div>
-      <Link to="/sign-in">
-        <div className="bg-[#52B5D1] text-white w-full py-3 flex justify-center items-center cursor-pointer rounded-lg mt-4">
+      
+        <button onClick={handleLogout} className="bg-[#52B5D1] text-white w-full py-3 flex justify-center items-center cursor-pointer rounded-lg mt-4">
           <FiLogOut className="text-xl" />
           <p className="ml-2">Log out</p>
-        </div>
-      </Link>
+        </button>
+      
     </div>
   );
 };
