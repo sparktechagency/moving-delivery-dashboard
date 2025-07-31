@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { EyeOutlined } from "@ant-design/icons";
 import { IoIosArrowBack, IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { MdBlock } from "react-icons/md";
@@ -6,114 +6,42 @@ import userImage from "../../assets/image/admin.jpg";
 import { useGetAllUsersQuery } from "../../features/api/userManagementApi";
 
 function UserManagement() {
-  const initialUsers = [
-    {
-      id: "#01",
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      date: "05 Jan 2024",
-      accType: "User",
-    },
-    {
-      id: "#02",
-      name: "Michael Smith",
-      email: "michael.smith@example.com",
-      date: "12 Feb 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#03",
-      name: "Emma Williams",
-      email: "emma.williams@example.com",
-      date: "23 Mar 2024",
-      accType: "User",
-    },
-    {
-      id: "#04",
-      name: "Daniel Brown",
-      email: "daniel.brown@example.com",
-      date: "17 Apr 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#05",
-      name: "Olivia Davis",
-      email: "olivia.davis@example.com",
-      date: "08 May 2024",
-      accType: "User",
-    },
-    {
-      id: "#06",
-      name: "Liam Miller",
-      email: "liam.miller@example.com",
-      date: "29 May 2024",
-      accType: "User",
-    },
-    {
-      id: "#07",
-      name: "Sophia Wilson",
-      email: "sophia.wilson@example.com",
-      date: "14 Jun 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#08",
-      name: "Noah Moore",
-      email: "noah.moore@example.com",
-      date: "27 Jun 2024",
-      accType: "User",
-    },
-    {
-      id: "#09",
-      name: "Isabella Taylor",
-      email: "isabella.taylor@example.com",
-      date: "09 Jul 2024",
-      accType: "User",
-    },
-    {
-      id: "#10",
-      name: "James Anderson",
-      email: "james.anderson@example.com",
-      date: "21 Jul 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#11",
-      name: "Mia Thomas",
-      email: "mia.thomas@example.com",
-      date: "02 Aug 2024",
-      accType: "User",
-    },
-    {
-      id: "#12",
-      name: "Benjamin Jackson",
-      email: "benjamin.jackson@example.com",
-      date: "15 Aug 2024",
-      accType: "User",
-    },
- 
-
-   
-  ];
-
-  const {data,isloading,error} = useGetAllUsersQuery()
-  console.log(data)
+  const { data, isLoading, error } = useGetAllUsersQuery();
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalBlock, setIsModalBlock] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); // state to hold the selected user for modal
+  const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState(initialUsers);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 14;
 
-  // for user search functionality
+  useEffect(() => {
+    const allUsers = data?.data?.all_users || [];
+    if (Array.isArray(allUsers)) {
+      const formattedUsers = allUsers.map((user, index) => ({
+        id: `#${index + 1}`,
+        name: user.name || "No Name",
+        email: user.email || "No Email",
+        date: new Date(user.createdAt).toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+        accType: user.role || "User",
+      }));
+      setUsers(formattedUsers);
+      setFilteredUsers(formattedUsers);
+    }
+  }, [data]);
+
   const handleSearch = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
     if (term.trim() === "") {
-      setFilteredUsers(initialUsers);
+      setFilteredUsers(users);
     } else {
-      const filtered = initialUsers.filter(
+      const filtered = users.filter(
         (user) =>
           user.name.toLowerCase().includes(term.toLowerCase()) ||
           user.email.toLowerCase().includes(term.toLowerCase()) ||
@@ -124,7 +52,6 @@ function UserManagement() {
     setCurrentPage(1);
   };
 
-  // for pagination functionality
   const indexOfLastUser = currentPage * pageSize;
   const indexOfFirstUser = indexOfLastUser - pageSize;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
@@ -134,21 +61,23 @@ function UserManagement() {
   };
 
   const handleViewUser = (user) => {
-    setSelectedUser(user); // set the clicked user
+    setSelectedUser(user);
     setIsModalOpen(true);
   };
 
   const handleBlockUser = (user) => {
-    setSelectedUser(user); // set the clicked user
+    setSelectedUser(user);
     setIsModalBlock(true);
   };
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
+  if (isLoading) return <div className="mt-10 text-center">Loading users...</div>;
+  if (error) return <div className="mt-10 text-center text-red-500">Failed to load users.</div>;
+
   return (
     <>
       <div className="h-[calc(100vh-80px)] bg-[#E0F2F7] mt-16">
-        {/* Header with search */}
         <div className="bg-[#4BADC9] p-4 flex justify-end">
           <div className="w-72">
             <input
@@ -161,7 +90,6 @@ function UserManagement() {
           </div>
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto bg-[#4BADC9]">
           <table className="w-full">
             <thead>
@@ -202,7 +130,6 @@ function UserManagement() {
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="flex justify-end py-4">
           <button
             onClick={() => onPageChange(currentPage - 1)}
@@ -234,12 +161,11 @@ function UserManagement() {
         </div>
       </div>
 
-      {/* ================= Modal for user  details ============= */}
+      {/* View Modal */}
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md p-4 overflow-hidden bg-white rounded-md">
             <div className="relative">
-              {/* Modal Close Button */}
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="absolute p-1 text-white rounded-full right-2 top-2 bg-white/10 hover:bg-white/20"
@@ -247,7 +173,6 @@ function UserManagement() {
                 <IoMdClose />
               </button>
 
-              {/* Modal Header */}
               <div className="bg-[#52B5D1] p-6 text-center rounded-md">
                 <div className="w-24 h-24 mx-auto mb-4 overflow-hidden border-4 border-white rounded-full">
                   <img src={userImage} className="object-cover w-full h-full" />
@@ -257,7 +182,6 @@ function UserManagement() {
                 </h2>
               </div>
 
-              {/* Modal  Content  */}
               <div className="p-6">
                 <div className="flex flex-col gap-4">
                   <div className="flex justify-between">
@@ -278,22 +202,13 @@ function UserManagement() {
                     </div>
                     <div className="w-1/3">
                       <h3 className="font-bold text-black">Location</h3>
-                      <p className="text-gray-700">USA</p>{" "}
-                      {/* You can customize */}
+                      <p className="text-gray-700">USA</p>
                     </div>
                   </div>
                 </div>
-                {/* Social Media Buttons */}
+
                 <div className="mt-6">
-                  <h3 className="mb-2 font-semibold text-black">
-                  Attach File
-                  </h3>
-                  <div className="flex space-x-2">
-                    
-
-
-
-                  </div>
+                  <h3 className="mb-2 font-semibold text-black">Attach File</h3>
                 </div>
               </div>
             </div>
@@ -301,30 +216,23 @@ function UserManagement() {
         </div>
       )}
 
-      {/* ================= Modal for  Block Users ============= */}
+      {/* Block Modal */}
       {isModalBlock && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md overflow-hidden bg-white rounded-md">
             <div className="relative">
-              {/* Modal Close Button */}
               <button
                 onClick={() => setIsModalBlock(false)}
-                this
-                close
-                not
-                working
                 className="absolute p-1 rounded-full right-2 top-2 bg-white/10 hover:bg-white/20"
               >
                 <IoMdClose />
               </button>
 
-              {/* Modal Header */}
-
               <div className="flex flex-col items-center justify-center py-12 space-y-4 px-11">
                 <h2 className="text-xl font-bold text-[#39b4c0]">
                   Are You Sure You Want to Block?
                 </h2>
-                <p>Do you want to Block your Users profile ?</p>
+                <p>Do you want to Block your User's profile?</p>
                 <button className="bg-[#52B5D1] py-3 px-8 rounded-md font-semibold text-white">
                   Confirm
                 </button>
@@ -335,7 +243,6 @@ function UserManagement() {
       )}
     </>
   );
-
 }
 
 export default UserManagement;

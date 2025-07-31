@@ -2,10 +2,13 @@ import { Checkbox, Form, Input, Typography, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../../../features/slices/authSlice";
 import { useSigninMutation } from "../../../features/api/authApi";
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [showpassword, setShowpassword] = useState(false);
   const [form] = Form.useForm();
 
@@ -15,30 +18,38 @@ const SignIn = () => {
     setShowpassword(!showpassword);
   };
 
-const onFinish = async (values) => {
-  try {
-    const credentials = {
-      email: values.email,
-      password: values.password,
-    };
+  const onFinish = async (values) => {
+    try {
+      const credentials = {
+        email: values.email,
+        password: values.password,
+      };
 
-    const response = await signin(credentials).unwrap();
-    console.log("Login response:", response);
+      const response = await signin(credentials).unwrap();
+      console.log("Login response:", response);
 
-    // Save token and user from response.data
-    localStorage.setItem("token", response.data?.accessToken || "");
-    localStorage.setItem("user", JSON.stringify(response.data?.user || { email: values.email }));
+      // Dispatch to Redux store
+      dispatch(
+        setCredentials({
+          token: response.data?.accessToken || "",
+          user: response.data?.user || { email: values.email },
+        })
+      );
 
-    message.success("Login successful!");
-    navigate("/dashboard");
-  } catch (error) {
-    console.error("Login failed:", error);
-    message.error(error?.data?.message || "Login failed");
-  }
-};
+      // Save to localStorage (optional, authSlice also does this)
+      localStorage.setItem("token", response.data?.accessToken || "");
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data?.user || { email: values.email })
+      );
 
-
- 
+      message.success("Login successful!");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login failed:", error);
+      message.error(error?.data?.message || "Login failed");
+    }
+  };
 
   return (
     <div className="bg-white">
