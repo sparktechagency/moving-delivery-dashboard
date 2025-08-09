@@ -7,7 +7,6 @@ import nid from "../../assets/image/NID.png";
 
 
 function UserRequest() {
-  // Generate more sample data
   const initialUsers = [
     {
       id: "#01",

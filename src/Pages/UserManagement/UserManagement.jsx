@@ -15,12 +15,14 @@ function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 14;
+   
+  
 
   useEffect(() => {
     const allUsers = data?.data?.all_users || [];
     if (Array.isArray(allUsers)) {
       const formattedUsers = allUsers.map((user, index) => ({
-        id: `#${index + 1}`,
+        id: `${index + 1}`,
         name: user.name || "No Name",
         email: user.email || "No Email",
         date: new Date(user.createdAt).toLocaleDateString("en-US", {
@@ -174,9 +176,9 @@ function UserManagement() {
               </button>
 
               <div className="bg-[#52B5D1] p-6 text-center rounded-md">
-                <div className="w-24 h-24 mx-auto mb-4 overflow-hidden border-4 border-white rounded-full">
+                {/* <div className="w-24 h-24 mx-auto mb-4 overflow-hidden border-4 border-white rounded-full">
                   <img src={userImage} className="object-cover w-full h-full" />
-                </div>
+                </div> */}
                 <h2 className="text-xl font-bold text-white">
                   {selectedUser.name}
                 </h2>
