@@ -26,7 +26,7 @@ const Dashboard = () => {
         </div>
         <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2">
           <div className="bg-[#4BADC9] p-4 rounded-md">
-            <UserOverviewChart />
+            <UserOverviewChart  />
           </div>
           <div className="bg-[#4BADC9] p-4 rounded-md">
             <EarningOverviewChart />

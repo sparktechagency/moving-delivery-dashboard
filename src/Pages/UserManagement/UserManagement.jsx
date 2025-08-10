@@ -176,8 +176,8 @@ function UserManagement() {
               </button>
 
               <div className="bg-[#52B5D1] p-6 text-center rounded-md">
-                {/* <div className="w-24 h-24 mx-auto mb-4 overflow-hidden border-4 border-white rounded-full">
-                  <img src={userImage} className="object-cover w-full h-full" />
+                {/*<div className="w-24 h-24 mx-auto mb-4 overflow-hidden border-4 border-white rounded-full">
+                  <img src={userImage} className="object-cover w-full h-full"/>
                 </div> */}
                 <h2 className="text-xl font-bold text-white">
                   {selectedUser.name}
