@@ -5,227 +5,81 @@ import { MdBlock } from "react-icons/md";
 import userImage from "../../assets/image/admin.jpg";
 import nid from "../../assets/image/NID.png";
 
-
 function UserRequest() {
-  const initialUsers = [
+  // API data structure
+  const apiData = [
     {
-      id: "#01",
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      date: "05 Jan 2024",
-      accType: "User",
-    },
-    {
-      id: "#02",
-      name: "Michael Smith",
-      email: "michael.smith@example.com",
-      date: "12 Feb 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#03",
-      name: "Emma Williams",
-      email: "emma.williams@example.com",
-      date: "23 Mar 2024",
-      accType: "User",
-    },
-    {
-      id: "#04",
-      name: "Daniel Brown",
-      email: "daniel.brown@example.com",
-      date: "17 Apr 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#05",
-      name: "Olivia Davis",
-      email: "olivia.davis@example.com",
-      date: "08 May 2024",
-      accType: "User",
-    },
-    {
-      id: "#06",
-      name: "Liam Miller",
-      email: "liam.miller@example.com",
-      date: "29 May 2024",
-      accType: "User",
-    },
-    {
-      id: "#07",
-      name: "Sophia Wilson",
-      email: "sophia.wilson@example.com",
-      date: "14 Jun 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#08",
-      name: "Noah Moore",
-      email: "noah.moore@example.com",
-      date: "27 Jun 2024",
-      accType: "User",
-    },
-    {
-      id: "#09",
-      name: "Isabella Taylor",
-      email: "isabella.taylor@example.com",
-      date: "09 Jul 2024",
-      accType: "User",
-    },
-    {
-      id: "#10",
-      name: "James Anderson",
-      email: "james.anderson@example.com",
-      date: "21 Jul 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#11",
-      name: "Mia Thomas",
-      email: "mia.thomas@example.com",
-      date: "02 Aug 2024",
-      accType: "User",
-    },
-    {
-      id: "#12",
-      name: "Benjamin Jackson",
-      email: "benjamin.jackson@example.com",
-      date: "15 Aug 2024",
-      accType: "User",
-    },
-    {
-      id: "#13",
-      name: "Charlotte White",
-      email: "charlotte.white@example.com",
-      date: "28 Aug 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#14",
-      name: "Lucas Harris",
-      email: "lucas.harris@example.com",
-      date: "09 Sep 2024",
-      accType: "User",
-    },
-    {
-      id: "#15",
-      name: "Amelia Martin",
-      email: "amelia.martin@example.com",
-      date: "20 Sep 2024",
-      accType: "User",
-    },
-    {
-      id: "#16",
-      name: "Elijah Thompson",
-      email: "elijah.thompson@example.com",
-      date: "01 Oct 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#17",
-      name: "Harper Garcia",
-      email: "harper.garcia@example.com",
-      date: "12 Oct 2024",
-      accType: "User",
-    },
-    {
-      id: "#18",
-      name: "William Martinez",
-      email: "william.martinez@example.com",
-      date: "24 Oct 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#19",
-      name: "Evelyn Robinson",
-      email: "evelyn.robinson@example.com",
-      date: "04 Nov 2024",
-      accType: "User",
-    },
-    {
-      id: "#20",
-      name: "Henry Clark",
-      email: "henry.clark@example.com",
-      date: "16 Nov 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#21",
-      name: "Abigail Rodriguez",
-      email: "abigail.rodriguez@example.com",
-      date: "28 Nov 2024",
-      accType: "User",
-    },
-    {
-      id: "#22",
-      name: "Sebastian Lewis",
-      email: "sebastian.lewis@example.com",
-      date: "09 Dec 2024",
-      accType: "Driver",
-    },
-    {
-      id: "#23",
-      name: "Ella Lee",
-      email: "ella.lee@example.com",
-      date: "20 Dec 2024",
-      accType: "User",
-    },
-    {
-      id: "#24",
-      name: "Alexander Walker",
-      email: "alexander.walker@example.com",
-      date: "31 Dec 2024",
-      accType: "User",
-    },
-    {
-      id: "#25",
-      name: "Avery Hall",
-      email: "avery.hall@example.com",
-      date: "11 Jan 2025",
-      accType: "Driver",
-    },
-    {
-      id: "#26",
-      name: "Jack Allen",
-      email: "jack.allen@example.com",
-      date: "22 Jan 2025",
-      accType: "User",
-    },
-    {
-      id: "#27",
-      name: "Scarlett Young",
-      email: "scarlett.young@example.com",
-      date: "02 Feb 2025",
-      accType: "User",
-    },
-    {
-      id: "#28",
-      name: "Levi Hernandez",
-      email: "levi.hernandez@example.com",
-      date: "14 Feb 2025",
-      accType: "Driver",
-    },
-    {
-      id: "#29",
-      name: "Grace King",
-      email: "grace.king@example.com",
-      date: "25 Feb 2025",
-      accType: "User",
-    },
-    {
-      id: "#30",
-      name: "Matthew Wright",
-      email: "matthew.wright@example.com",
-      date: "09 Mar 2025",
-      accType: "User",
-    },
+      "_id": "689d89a4e0115e59dfdf9a7c",
+      "userId": {
+        "_id": "689d876fe0115e59dfdf9a58",
+        "name": "Ali Mohammad ",
+        "email": "nagilos504@cotasen.com",
+        "phoneNumber": "+8801555555555",
+        "id": "689d876fe0115e59dfdf9a58"
+      },
+      "driverSelectedTruck": {
+        "_id": "689d8926e0115e59dfdf9a6f",
+        "truckcategories": "mini truck",
+        "photo": "src/public/images/images-42869539-cf47-4498-ae00-738601451a52.jpg"
+      },
+      "driverLocation": "Dhaka",
+      "vehicleNumber": "12345620 CM",
+      "truckSize": "23 CM",
+      "loadCapacity": "320 Ton",
+      "autoDetectLocation": [
+        "37.4219983",
+        "-122.084"
+      ],
+      "picCities": "Dhaka",
+      "picState": "Dhaka",
+      "isVerifyDriverLicense": true,
+      "driverLicense": "src/public/images/scaled_43-726b66a8-caa4-4c38-ae27-8faeaa5bd2ed.jpg",
+      "driverNidCard": "src/public/images/scaled_37-17065651-3cd9-4a4e-95b3-01497fefe129.jpg",
+      "isVerifyDriverNid": true,
+      "isReadyToDrive": true,
+      "isDelete": false,
+      "createdAt": "2025-08-14T07:00:52.630Z",
+      "updatedAt": "2025-08-14T07:00:52.630Z",
+      "id": "689d89a4e0115e59dfdf9a7c"
+    }
   ];
+
+  // Transform API data to match your existing table structure
+  const transformedUsers = apiData.map((item, index) => ({
+    id: `#${String(index + 1).padStart(2, '0')}`,
+    name: item.userId.name,
+    email: item.userId.email,
+    phoneNumber: item.userId.phoneNumber,
+    date: new Date(item.createdAt).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }),
+    accType: "Driver", // Since this is driver data
+    driverLocation: item.driverLocation,
+    vehicleNumber: item.vehicleNumber,
+    truckSize: item.truckSize,
+    loadCapacity: item.loadCapacity,
+    truckcategories: item.driverSelectedTruck.truckcategories,
+    truckPhoto: item.driverSelectedTruck.photo,
+    picCities: item.picCities,
+    picState: item.picState,
+    driverLicense: item.driverLicense,
+    driverNidCard: item.driverNidCard,
+    isVerifyDriverLicense: item.isVerifyDriverLicense,
+    isVerifyDriverNid: item.isVerifyDriverNid,
+    isReadyToDrive: item.isReadyToDrive,
+    coordinates: item.autoDetectLocation,
+    originalId: item._id,
+    userId: item.userId._id
+  }));
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalAccept, setIsModalAccept] = useState(false);
   const [isModalBlock, setIsModalBlock] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); // state to hold the selected user for modal
+  const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState(initialUsers);
+  const [filteredUsers, setFilteredUsers] = useState(transformedUsers);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 14;
 
@@ -234,13 +88,15 @@ function UserRequest() {
     const term = e.target.value;
     setSearchTerm(term);
     if (term.trim() === "") {
-      setFilteredUsers(initialUsers);
+      setFilteredUsers(transformedUsers);
     } else {
-      const filtered = initialUsers.filter(
+      const filtered = transformedUsers.filter(
         (user) =>
           user.name.toLowerCase().includes(term.toLowerCase()) ||
           user.email.toLowerCase().includes(term.toLowerCase()) ||
-          user.accType.toLowerCase().includes(term.toLowerCase())
+          user.accType.toLowerCase().includes(term.toLowerCase()) ||
+          user.driverLocation.toLowerCase().includes(term.toLowerCase()) ||
+          user.vehicleNumber.toLowerCase().includes(term.toLowerCase())
       );
       setFilteredUsers(filtered);
     }
@@ -257,17 +113,17 @@ function UserRequest() {
   };
 
   const handleViewUser = (user) => {
-    setSelectedUser(user); // set the clicked user
+    setSelectedUser(user);
     setIsModalOpen(true);
   };
 
   const handleBlockUser = (user) => {
-    setSelectedUser(user); // set the clicked user
+    setSelectedUser(user);
     setIsModalBlock(true);
   };
 
   const handleAcceptUser = (user) => {
-    setSelectedUser(user); // set the clicked user
+    setSelectedUser(user);
     setIsModalAccept(true);
   };
 
@@ -299,7 +155,6 @@ function UserRequest() {
                 <th className="px-4 py-3 text-left">Name</th>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-left">Acc Type</th>
                 <th className="px-4 py-3 text-left">Action</th>
               </tr>
             </thead>
@@ -314,9 +169,8 @@ function UserRequest() {
                   <td className="px-4 my-3 text-white">{user.name}</td>
                   <td className="px-4 my-3 text-white">{user.email}</td>
                   <td className="px-4 my-3 text-white">{user.date}</td>
-                  <td className="px-4 my-3 text-white">{user.accType}</td>
                   <td className="flex px-4 py-3 space-x-4">
-                    {/* for details details user  */}
+                    {/* for details user  */}
                     <button
                       onClick={() => handleViewUser(user)}
                       className="text-white hover:text-gray-200"
@@ -329,7 +183,6 @@ function UserRequest() {
                       className="text-green-400 hover:text-gray-200"
                     >
                       <IoIosCheckmarkCircle size={20}/>
-                     
                     </button>
                     {/* for block user  */}
                     <button
@@ -377,15 +230,15 @@ function UserRequest() {
         </div>
       </div>
 
-      {/* ================= Modal for user  details ============= */}
+      {/* ================= Modal for user details ============= */}
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md p-4 overflow-hidden bg-white rounded-md">
+          <div className="w-full max-w-2xl p-4 overflow-hidden bg-white rounded-md max-h-[90vh] overflow-y-auto">
             <div className="relative">
               {/* Modal Close Button */}
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute p-1 text-white rounded-full right-2 top-2 bg-white/10 hover:bg-white/20"
+                className="absolute z-10 p-1 text-white rounded-full right-2 top-2 bg-black/20 hover:bg-black/30"
               >
                 <IoMdClose />
               </button>
@@ -398,45 +251,146 @@ function UserRequest() {
                 <h2 className="text-xl font-bold text-white">
                   {selectedUser.name}
                 </h2>
+                <p className="text-white/80">{selectedUser.accType}</p>
               </div>
 
-              {/* Modal  Content  */}
+              {/* Modal Content */}
               <div className="p-6">
-                <div className="flex flex-col gap-4">
-                  <div className="flex justify-between">
-                    <div className="w-2/3">
-                      <h3 className="font-bold text-black ">Email</h3>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {/* Personal Information */}
+                  <div className="space-y-4">
+                    <h3 className="pb-2 text-lg font-bold text-black border-b">Personal Information</h3>
+                    
+                    <div>
+                      <h4 className="font-semibold text-black">Email</h4>
                       <p className="text-gray-700">{selectedUser.email}</p>
                     </div>
-                    <div className="w-1/3">
-                      <h3 className="font-bold text-black">Account Type</h3>
-                      <p className="text-gray-700">{selectedUser.accType}</p>
+
+                    <div>
+                      <h4 className="font-semibold text-black">Phone Number</h4>
+                      <p className="text-gray-700">{selectedUser.phoneNumber}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-black">Date Joined</h4>
+                      <p className="text-gray-700">{selectedUser.date}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-black">Location</h4>
+                      <p className="text-gray-700">{selectedUser.driverLocation}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-black">Pick-up Cities</h4>
+                      <p className="text-gray-700">{selectedUser.picCities}, {selectedUser.picState}</p>
                     </div>
                   </div>
 
-                  <div className="flex justify-between">
-                    <div className="w-2/3">
-                      <h3 className="font-bold text-black">Date Joined</h3>
-                      <p className="text-gray-700">{selectedUser.date}</p>
+                  {/* Vehicle Information */}
+                  <div className="space-y-4">
+                    <h3 className="pb-2 text-lg font-bold text-black border-b">Vehicle Information</h3>
+                    
+                    <div>
+                      <h4 className="font-semibold text-black">Vehicle Number</h4>
+                      <p className="text-gray-700">{selectedUser.vehicleNumber}</p>
                     </div>
-                    <div className="w-1/3">
-                      <h3 className="font-bold text-black">Location</h3>
-                      <p className="text-gray-700">USA</p>{" "}
-                      {/* You can customize */}
+
+                    <div>
+                      <h4 className="font-semibold text-black">Truck Category</h4>
+                      <p className="text-gray-700 capitalize">{selectedUser.truckcategories}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-black">Truck Size</h4>
+                      <p className="text-gray-700">{selectedUser.truckSize}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-black">Load Capacity</h4>
+                      <p className="text-gray-700">{selectedUser.loadCapacity}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-black">Ready to Drive</h4>
+                      <p className="text-gray-700">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          selectedUser.isReadyToDrive 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {selectedUser.isReadyToDrive ? 'Yes' : 'No'}
+                        </span>
+                      </p>
                     </div>
                   </div>
                 </div>
-                {/* Social Media Buttons */}
+
+                {/* Verification Status */}
                 <div className="mt-6">
-                  <h3 className="mb-2 font-semibold text-black">
-                  NID/Licence
-                  </h3>
-                  <div className="flex space-x-2">
-                    <img src={nid} alt="" />
-                    
-     
+                  <h3 className="pb-2 text-lg font-bold text-black border-b">Verification Status</h3>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <h4 className="font-semibold text-black">Driver License</h4>
+                      <p className="text-gray-700">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          selectedUser.isVerifyDriverLicense 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {selectedUser.isVerifyDriverLicense ? 'Verified' : 'Not Verified'}
+                        </span>
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-black">NID Card</h4>
+                      <p className="text-gray-700">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          selectedUser.isVerifyDriverNid 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {selectedUser.isVerifyDriverNid ? 'Verified' : 'Not Verified'}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
+                {/* Documents */}
+                <div className="mt-6">
+                  <h3 className="pb-2 text-lg font-bold text-black border-b">Documents</h3>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <h4 className="mb-2 font-semibold text-black">Driver License</h4>
+                      <div className="p-2 border rounded-md">
+                        <img 
+                          src={nid} 
+                          alt="Driver License" 
+                          className="object-cover w-full h-32 rounded"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="mb-2 font-semibold text-black">NID Card</h4>
+                      <div className="p-2 border rounded-md">
+                        <img 
+                          src={nid} 
+                          alt="NID Card" 
+                          className="object-cover w-full h-32 rounded"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
+                {/* GPS Coordinates */}
+                <div className="mt-6">
+                  <h3 className="pb-2 text-lg font-bold text-black border-b">Location Coordinates</h3>
+                  <div className="mt-4">
+                    <p className="text-gray-700">
+                      Latitude: {selectedUser.coordinates[0]}, Longitude: {selectedUser.coordinates[1]}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -445,7 +399,7 @@ function UserRequest() {
         </div>
       )}
 
-      {/* ================= Modal for  Block Users ============= */}
+      {/* ================= Modal for Block Users ============= */}
       {isModalBlock && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md overflow-hidden bg-white rounded-md">
@@ -453,24 +407,19 @@ function UserRequest() {
               {/* Modal Close Button */}
               <button
                 onClick={() => setIsModalBlock(false)}
-                this
-                close
-                not
-                working
                 className="absolute p-1 rounded-full right-2 top-2 bg-white/10 hover:bg-white/20"
               >
                 <IoMdClose />
               </button>
 
               {/* Modal Header */}
-
               <div className="flex flex-col items-center justify-center py-12 space-y-4 px-11">
                 <h2 className="text-xl font-bold text-[#39b4c0]">
                   Are You Sure You Want to Block?
                 </h2>
-                <p>Do you want to Block your Users profile ?</p>
+                <p>Do you want to Block {selectedUser.name}'s profile?</p>
                 <button className="px-8 py-3 font-semibold text-white bg-red-500 rounded-md">
-                  Confirm
+                  Confirm Block
                 </button>
               </div>
             </div>
@@ -478,33 +427,27 @@ function UserRequest() {
         </div>
       )}
 
-
-        {/* ================= Modal for  Accept Users ============= */}
-        {isModalAccept && selectedUser && (
+      {/* ================= Modal for Accept Users ============= */}
+      {isModalAccept && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md overflow-hidden bg-white rounded-md">
             <div className="relative">
               {/* Modal Close Button */}
               <button
                 onClick={() => setIsModalAccept(false)}
-                this
-                close
-                not
-                working
                 className="absolute p-1 rounded-full right-2 top-2 bg-white/10 hover:bg-white/20"
               >
                 <IoMdClose />
               </button>
 
               {/* Modal Header */}
-
               <div className="flex flex-col items-center justify-center py-12 space-y-4 px-11">
                 <h2 className="text-xl font-bold text-[#39b4c0]">
-                  Are You Sure  ?
+                  Are You Sure?
                 </h2>
-                <p>Do you want to Accept your Users profile ?</p>
+                <p>Do you want to Accept {selectedUser.name}'s profile?</p>
                 <button className="bg-[#52B5D1] py-3 px-8 rounded-md font-semibold text-white">
-                  Confirm
+                  Confirm Accept
                 </button>
               </div>
             </div>
@@ -516,4 +459,3 @@ function UserRequest() {
 }
 
 export default UserRequest;
-
