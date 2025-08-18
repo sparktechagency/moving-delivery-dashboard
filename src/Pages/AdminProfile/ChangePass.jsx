@@ -1,106 +1,122 @@
 import { useState } from "react";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
+import { message } from "antd";
+import { useChangePasswordMutation } from "../../features/api/settingApi";
 
 function ChangePass() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [newPassword, setNewPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState(false);
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // validation
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      message.error("All fields are required");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      message.error("New password and confirm password do not match");
+      return;
+    }
+
+    try {
+      const payload = {
+        oldpassword: oldPassword,
+        newpassword: newPassword,
+      };
+
+      const res = await changePassword(payload).unwrap();
+      message.success(res.message || "Password changed successfully");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      console.error("Error:", err);
+      message.error(err?.data?.message || "Failed to change password");
+    }
+  };
 
   return (
-    <div>
+    <div className="w-full max-w-md mx-auto p-6 bg-[#52B5D1] rounded-md">
       <p className="mb-5 text-xl font-bold text-center text-white">
         Change Password
       </p>
-      <form className="space-y-4 w-auto md:w-[480px]">
-        <div className="w-full">
-          <label
-            htmlFor="password"
-            className="text-xl font-bold text-white "
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        {/* Current Password */}
+        <div className="relative">
+          <label className="font-semibold text-white">Current Password</label>
+          <input
+            type={showOld ? "text" : "password"}
+            placeholder="********"
+            className="w-full px-4 py-2 mt-1 rounded-md outline-none"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+            required
+          />
+          <button
+            type="button"
+            className="absolute text-white right-3 top-9"
+            onClick={() => setShowOld(!showOld)}
           >
-            Current Password
-          </label>
-          <div className="relative w-full">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="**********"
-              className="w-full px-5 py-3  rounded-md  bg-[#52B5D1] border-2 border-whiteplaceholder:text-xl"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute flex items-center text-white right-3 bottom-4"
-            >
-              {showPassword ? (
-                <IoEyeOffOutline className="w-5 h-5" />
-              ) : (
-                <IoEyeOutline className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-        </div>
-        <div className="w-full">
-          <label
-            htmlFor="password"
-            className="mb-2 text-xl font-bold text-white"
-          >
-            New Password
-          </label>
-          <div className="relative w-full">
-            <input
-              type={newPassword ? "text" : "password"}
-              name="password"
-              placeholder="**********"
-              className="w-full  bg-[#52B5D1] border-2 border-white rounded-md outline-none px-5 py-3 mt-5 placeholder:text-xl"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setNewPassword(!newPassword)}
-              className="absolute right-3 bottom-4 flex items-center text-[#6A6D76]"
-            >
-              {showPassword ? (
-                <IoEyeOffOutline className="w-5 h-5" />
-              ) : (
-                <IoEyeOutline className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-        </div>
-        <div className="w-full">
-          <label
-            htmlFor="password"
-            className="mb-2 text-xl font-bold text-white"
-          >
-            Confirm New Password
-          </label>
-          <div className="relative w-full">
-            <input
-              type={confirmPassword ? "text" : "password"}
-              name="password"
-              placeholder="**********"
-              className="w-full bg-[#52B5D1] border-2 border-white rounded-md outline-none px-5 py-3 mt-5 placeholder:text-xl "
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setConfirmPassword(!confirmPassword)}
-              className="absolute right-3 bottom-4 flex items-center text-[#6A6D76]"
-            >
-              {confirmPassword ? (
-                <IoEyeOffOutline className="w-5 h-5" />
-              ) : (
-                <IoEyeOutline className="w-5 h-5" />
-              )}
-            </button>
-          </div>
-        </div>
-        <div className="py-5 text-center">
-          <button className="bg-[#F8FAFC] text-BLACK font-semibold w-full py-3 rounded-md">
-            Save & Change
+            {showOld ? <IoEyeOffOutline /> : <IoEyeOutline />}
           </button>
         </div>
+
+        {/* New Password */}
+        <div className="relative">
+          <label className="font-semibold text-white">New Password</label>
+          <input
+            type={showNew ? "text" : "password"}
+            placeholder="********"
+            className="w-full px-4 py-2 mt-1 rounded-md outline-none"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+          <button
+            type="button"
+            className="absolute text-white right-3 top-9"
+            onClick={() => setShowNew(!showNew)}
+          >
+            {showNew ? <IoEyeOffOutline /> : <IoEyeOutline />}
+          </button>
+        </div>
+
+        {/* Confirm Password */}
+        <div className="relative">
+          <label className="font-semibold text-white">Confirm Password</label>
+          <input
+            type={showConfirm ? "text" : "password"}
+            placeholder="********"
+            className="w-full px-4 py-2 mt-1 rounded-md outline-none"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
+          <button
+            type="button"
+            className="absolute text-white right-3 top-9"
+            onClick={() => setShowConfirm(!showConfirm)}
+          >
+            {showConfirm ? <IoEyeOffOutline /> : <IoEyeOutline />}
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full py-2 mt-4 font-semibold text-[#52B5D1] bg-white rounded-md"
+          disabled={isLoading}
+        >
+          {isLoading ? "Changing..." : "Save & Change"}
+        </button>
       </form>
     </div>
   );
