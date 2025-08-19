@@ -7,11 +7,9 @@ import { useGetPrivacyPolicyQuery, useUpdatePrivacyPolicyMutation } from "../../
 const PrivacyPolicy = () => {
   const [content, setContent] = useState("");
 
-  // GET Privacy Policy from backend
   const { data, isLoading: isFetching } = useGetPrivacyPolicyQuery();
   const [updatePrivacyPolicy, { isLoading }] = useUpdatePrivacyPolicyMutation();
 
-  // Set content when API response arrives
   useEffect(() => {
   if (data?.data?.PrivacyPolicy) {
     setContent(data.data.PrivacyPolicy);
@@ -20,7 +18,7 @@ const PrivacyPolicy = () => {
 
 const onFinish = async () => {
   try {
-    const payload = { PrivacyPolicy: content }; // ✅ match backend exactly
+    const payload = { PrivacyPolicy: content };
     console.log("Sending payload:", payload);
 
     const res = await updatePrivacyPolicy(payload).unwrap();

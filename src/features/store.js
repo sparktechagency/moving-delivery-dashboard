@@ -5,6 +5,7 @@ import { userApi } from "./api/userManagementApi.js";
 import { paymentApi } from "./api/allPayment.js";
 import { settingApi } from "./api/settingApi.js";
 import { driverApi } from "./api/driverRequest.js";
+import { dashboardApi } from "./api/dashboardApi.js";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     [paymentApi.reducerPath]: paymentApi.reducer,
     [settingApi.reducerPath]:settingApi.reducer,
     [driverApi.reducerPath]:driverApi.reducer,
+    [dashboardApi.reducerPath]: dashboardApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -21,6 +23,7 @@ export const store = configureStore({
       userApi.middleware,
       paymentApi.middleware,
       settingApi.middleware,
-      driverApi.middleware
+      driverApi.middleware,
+      dashboardApi.middleware
     ),
 });
