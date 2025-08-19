@@ -4,21 +4,30 @@ import UserOverviewChart from "../../Components/Dashboard/UserOverviewChart";
 import EarningOverviewChart from "../../Components/Dashboard/EarningOverviewChart";
 import UsersTable from "../../Components/Dashboard/UsersTable";
 import { DollarSign, Users } from "lucide-react";
-import { useGetEarningsOverviewQuery, useGetRecentUsersStatusQuery } from "../../features/api/dashboardApi";
+import {
+  useGetEarningsOverviewQuery,
+  useGetRecentUsersStatusQuery,
+} from "../../features/api/dashboardApi";
 import TotalEarnings from "../../Components/Dashboard/TotalEarnings";
 
 const Dashboard = () => {
   // Fetch recent users
-  const { data: usersData, isLoading, error } = useGetRecentUsersStatusQuery();
+  const { data: usersData, isLoading, error } =
+    useGetRecentUsersStatusQuery();
 
-    const { data, error:earningError, isLoading:earningLoading } = useGetEarningsOverviewQuery();
+  const {
+    data: earningsData,
+    error: earningError,
+    isLoading: earningLoading,
+  } = useGetEarningsOverviewQuery();
 
-    const totalAmt = data.data.totalAmount
-    // console.log(data.data.totalAmount)
-  
+  console.log("Earnings API Response:", earningsData);
+
   // Safely extract users
   const users = usersData?.data?.users || [];
 
+  // Extract totalAmount safely (fallback to 0 if not available)
+  const totalAmount = earningsData?.data?.totalAmount || 0;
 
   return (
     <div className="min-h-screen bg-[#C9E6ED]">
@@ -33,7 +42,7 @@ const Dashboard = () => {
             />
             <TotalEarnings
               title="Total Earnings"
-              value={totalAmt}
+              value={`$${totalAmount}`}
               icon={<DollarSign className="w-6 h-6 text-white" />}
             />
           </div>

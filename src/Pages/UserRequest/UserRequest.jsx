@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { EyeOutlined } from "@ant-design/icons";
-import { IoIosArrowBack, IoIosArrowForward, IoIosCheckmarkCircle, IoMdClose } from "react-icons/io";
+import {
+  IoIosArrowBack,
+  IoIosArrowForward,
+  IoIosCheckmarkCircle,
+  IoMdClose,
+} from "react-icons/io";
 import { MdBlock } from "react-icons/md";
 import userImage from "../../assets/image/admin.jpg";
 import { useGetDriverQuery } from "../../features/api/driverRequest";
 
 function UserRequest() {
   const { data: responseData, error, isLoading } = useGetDriverQuery();
-  
-  // Destructure the actual data array from the response object
+
   const apiData = responseData?.data?.all_driver_verification;
-  
+
   const [transformedUsers, setTransformedUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalAccept, setIsModalAccept] = useState(false);
@@ -22,17 +26,16 @@ function UserRequest() {
   const pageSize = 10;
 
   useEffect(() => {
-    // Only transform data if the nested array exists and is a valid array
     if (apiData && Array.isArray(apiData)) {
       const transformed = apiData.map((item, index) => ({
-        id: `${String(index + 1).padStart(2, '0')}`,
+        id: `${String(index + 1).padStart(2, "0")}`,
         name: item.userId?.name || "N/A",
         email: item.userId?.email || "N/A",
         phoneNumber: item.userId?.phoneNumber || "N/A",
-        date: new Date(item.createdAt).toLocaleDateString('en-GB', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
+        date: new Date(item.createdAt).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
         }),
         accType: "Driver",
         driverLocation: item.driverLocation || "N/A",
@@ -53,11 +56,10 @@ function UserRequest() {
         userId: item.userId?._id,
       }));
       setTransformedUsers(transformed);
-      setFilteredUsers(transformed); // Initialize filtered users with all users
+      setFilteredUsers(transformed);
     }
   }, [apiData]);
 
-  // For user search functionality
   const handleSearch = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
@@ -77,7 +79,6 @@ function UserRequest() {
     setCurrentPage(1);
   };
 
-  // For pagination functionality
   const indexOfLastUser = currentPage * pageSize;
   const indexOfFirstUser = indexOfLastUser - pageSize;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
@@ -103,7 +104,6 @@ function UserRequest() {
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
-  // Handle loading and error states for a better user experience
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-80px)]">
@@ -209,10 +209,11 @@ function UserRequest() {
               <button
                 key={index}
                 onClick={() => onPageChange(index + 1)}
-                className={`px-3 py-1 mx-1 rounded-full ${currentPage === index + 1
-                  ? "text-red-500"
-                  : "bg-transparent text-black"
-                  }`}
+                className={`px-3 py-1 mx-1 rounded-full ${
+                  currentPage === index + 1
+                    ? "text-red-500"
+                    : "bg-transparent text-black"
+                }`}
               >
                 {index + 1}
               </button>
@@ -243,20 +244,26 @@ function UserRequest() {
                 {/* <div className="w-24 h-24 mx-auto mb-4 overflow-hidden border-4 border-white rounded-full">
                   <img src={userImage} className="object-cover w-full h-full" alt="User" />
                 </div> */}
-                <h2 className="text-xl font-bold text-white">{selectedUser.name}</h2>
+                <h2 className="text-xl font-bold text-white">
+                  {selectedUser.name}
+                </h2>
                 <p className="text-white/80">{selectedUser.accType}</p>
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-4">
-                    <h3 className="pb-2 text-lg font-bold text-black border-b">Personal Information</h3>
+                    <h3 className="pb-2 text-lg font-bold text-black border-b">
+                      Personal Information
+                    </h3>
                     <div>
                       <h4 className="font-semibold text-black">Email</h4>
                       <p className="text-gray-700">{selectedUser.email}</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Phone Number</h4>
-                      <p className="text-gray-700">{selectedUser.phoneNumber}</p>
+                      <p className="text-gray-700">
+                        {selectedUser.phoneNumber}
+                      </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Date Joined</h4>
@@ -264,76 +271,119 @@ function UserRequest() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Location</h4>
-                      <p className="text-gray-700">{selectedUser.driverLocation}</p>
+                      <p className="text-gray-700">
+                        {selectedUser.driverLocation}
+                      </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">Pick-up Cities</h4>
-                      <p className="text-gray-700">{selectedUser.picCities}, {selectedUser.picState}</p>
+                      <h4 className="font-semibold text-black">
+                        Pick-up Cities
+                      </h4>
+                      <p className="text-gray-700">
+                        {selectedUser.picCities}, {selectedUser.picState}
+                      </p>
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h3 className="pb-2 text-lg font-bold text-black border-b">Vehicle Information</h3>
+                    <h3 className="pb-2 text-lg font-bold text-black border-b">
+                      Vehicle Information
+                    </h3>
                     <div>
-                      <h4 className="font-semibold text-black">Vehicle Number</h4>
-                      <p className="text-gray-700">{selectedUser.vehicleNumber}</p>
+                      <h4 className="font-semibold text-black">
+                        Vehicle Number
+                      </h4>
+                      <p className="text-gray-700">
+                        {selectedUser.vehicleNumber}
+                      </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">Truck Category</h4>
-                      <p className="text-gray-700 capitalize">{selectedUser.truckcategories}</p>
+                      <h4 className="font-semibold text-black">
+                        Truck Category
+                      </h4>
+                      <p className="text-gray-700 capitalize">
+                        {selectedUser.truckcategories}
+                      </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Truck Size</h4>
                       <p className="text-gray-700">{selectedUser.truckSize}</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">Load Capacity</h4>
-                      <p className="text-gray-700">{selectedUser.loadCapacity}</p>
+                      <h4 className="font-semibold text-black">
+                        Load Capacity
+                      </h4>
+                      <p className="text-gray-700">
+                        {selectedUser.loadCapacity}
+                      </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">Ready to Drive</h4>
+                      <h4 className="font-semibold text-black">
+                        Ready to Drive
+                      </h4>
                       <p className="text-gray-700">
-                        <span className={`px-2 py-1 rounded-full text-xs ${selectedUser.isReadyToDrive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                            }`}>
-                          {selectedUser.isReadyToDrive ? 'Yes' : 'No'}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            selectedUser.isReadyToDrive
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {selectedUser.isReadyToDrive ? "Yes" : "No"}
                         </span>
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-6">
-                  <h3 className="pb-2 text-lg font-bold text-black border-b">Verification Status</h3>
+                  <h3 className="pb-2 text-lg font-bold text-black border-b">
+                    Verification Status
+                  </h3>
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                      <h4 className="font-semibold text-black">Driver License</h4>
+                      <h4 className="font-semibold text-black">
+                        Driver License
+                      </h4>
                       <p className="text-gray-700">
-                        <span className={`px-2 py-1 rounded-full text-xs ${selectedUser.isVerifyDriverLicense
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                            }`}>
-                          {selectedUser.isVerifyDriverLicense ? 'Verified' : 'Not Verified'}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            selectedUser.isVerifyDriverLicense
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {selectedUser.isVerifyDriverLicense
+                            ? "Verified"
+                            : "Not Verified"}
                         </span>
                       </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">NID Card</h4>
                       <p className="text-gray-700">
-                        <span className={`px-2 py-1 rounded-full text-xs ${selectedUser.isVerifyDriverNid
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                            }`}>
-                          {selectedUser.isVerifyDriverNid ? 'Verified' : 'Not Verified'}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            selectedUser.isVerifyDriverNid
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {selectedUser.isVerifyDriverNid
+                            ? "Verified"
+                            : "Not Verified"}
                         </span>
                       </p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-6">
-                  <h3 className="pb-2 text-lg font-bold text-black border-b">Documents</h3>
+                  <h3 className="pb-2 text-lg font-bold text-black border-b">
+                    Documents
+                  </h3>
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                      <h4 className="mb-2 font-semibold text-black">Driver License</h4>
+                      <h4 className="mb-2 font-semibold text-black">
+                        Driver License
+                      </h4>
                       <div className="p-2 border rounded-md">
                         {/* Corrected: Show the actual image if it exists */}
                         {selectedUser.driverLicense ? (
@@ -350,7 +400,9 @@ function UserRequest() {
                       </div>
                     </div>
                     <div>
-                      <h4 className="mb-2 font-semibold text-black">NID Card</h4>
+                      <h4 className="mb-2 font-semibold text-black">
+                        NID Card
+                      </h4>
                       <div className="p-2 border rounded-md">
                         {/* Corrected: Show the actual image if it exists */}
                         {selectedUser.driverNidCard ? (
@@ -369,10 +421,13 @@ function UserRequest() {
                   </div>
                 </div>
                 <div className="mt-6">
-                  <h3 className="pb-2 text-lg font-bold text-black border-b">Location Coordinates</h3>
+                  <h3 className="pb-2 text-lg font-bold text-black border-b">
+                    Location Coordinates
+                  </h3>
                   <div className="mt-4">
                     <p className="text-gray-700">
-                      Latitude: {selectedUser.coordinates[0]}, Longitude: {selectedUser.coordinates[1]}
+                      Latitude: {selectedUser.coordinates[0]}, Longitude:{" "}
+                      {selectedUser.coordinates[1]}
                     </p>
                   </div>
                 </div>
