@@ -35,8 +35,8 @@ const Sidebar = ({ closeDrawer }) => {
     },
     {
       icon: <IoNewspaper className="w-5 h-5" />,
-      label: "User Request",
-      Link: "/user-request",
+      label: "Driver Request",
+      Link: "/driver-request",
     },
     {
       icon: <RiMoneyDollarCircleLine className="w-5 h-5" />,

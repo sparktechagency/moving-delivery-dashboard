@@ -4,6 +4,7 @@ import authReducer from "./slices/authSlice.js";
 import { userApi } from "./api/userManagementApi.js";
 import { paymentApi } from "./api/allPayment.js";
 import { settingApi } from "./api/settingApi.js";
+import { driverApi } from "./api/driverRequest.js";
 
 export const store = configureStore({
   reducer: {
@@ -12,12 +13,14 @@ export const store = configureStore({
     [userApi.reducerPath]: userApi.reducer,
     [paymentApi.reducerPath]: paymentApi.reducer,
     [settingApi.reducerPath]:settingApi.reducer,
+    [driverApi.reducerPath]:driverApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       authApi.middleware,
       userApi.middleware,
       paymentApi.middleware,
-      settingApi.middleware
+      settingApi.middleware,
+      driverApi.middleware
     ),
 });

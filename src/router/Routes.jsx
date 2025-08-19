@@ -52,7 +52,7 @@ export const router = createBrowserRouter([
             element: <UserManagement />,
           },
           {
-            path: "/user-request",
+            path: "/driver-request",
             element: <UserRequest/>,
           },
           {

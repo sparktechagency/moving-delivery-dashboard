@@ -7,9 +7,10 @@ import { useGetAllPaymentsQuery } from "../../features/api/allPayment";
 import { CloudCog } from "lucide-react";
 
 function Earnings() {
-  const { data, isLoading, isError } = useGetAllPaymentsQuery({ page: 1, limit: 10 });
-
-  // console.log(data)
+  const { data, isLoading, isError } = useGetAllPaymentsQuery({
+    page: 1,
+    limit: 10,
+  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalBlock, setIsModalBlock] = useState(false);
@@ -94,20 +95,24 @@ function Earnings() {
                 <th className="px-4 py-3 text-left">Name</th>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-left">Acc Type</th>
+                {/* <th className="px-4 py-3 text-left">Acc Type</th> */}
                 <th className="px-4 py-3 text-left">Action</th>
               </tr>
             </thead>
             <tbody>
               {currentUsers.map((user, index) => (
                 <tr key={index} className="bg-[#4BADC9]">
-                  <td className="px-4 text-white">{index + 1 + indexOfFirstUser}</td>
+                  <td className="px-4 text-white">
+                    {index + 1 + indexOfFirstUser}
+                  </td>
                   <td className="px-4 text-white">{user.payable_name}</td>
                   <td className="px-4 text-white">{user.payable_email}</td>
-                  <td className="px-4 text-white">{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 text-white">
-                    {user.driverId ? "Driver" : "User"}
+                    {new Date(user.createdAt).toLocaleDateString()}
                   </td>
+                  {/* <td className="px-4 text-white">
+                    {user.driverId}
+                  </td> */}
                   <td className="flex px-4 py-3 space-x-4">
                     <button
                       onClick={() => handleViewUser(user)}
@@ -141,10 +146,11 @@ function Earnings() {
             <button
               key={index}
               onClick={() => onPageChange(index + 1)}
-              className={`px-3 py-1 mx-1 rounded-full ${currentPage === index + 1
+              className={`px-3 py-1 mx-1 rounded-full ${
+                currentPage === index + 1
                   ? "text-red-500"
                   : "bg-transparent text-black"
-                }`}
+              }`}
             >
               {index + 1}
             </button>
@@ -159,62 +165,124 @@ function Earnings() {
         </div>
       </div>
 
-      {/* ================= Modal for user details ============= */}
+      {/* ================= Modal for Payment Details ============= */}
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md p-4 overflow-hidden bg-white rounded-md">
-            <div className="relative">
-              {/* Modal Close Button */}
+          <div className="w-full max-w-2xl p-6 bg-white rounded-xl shadow-lg overflow-y-auto max-h-[90vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 mb-4 border-b">
+              <h2 className="text-xl font-bold text-[#39b4c0]">
+                Payment Details
+              </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute p-1 text-white rounded-full right-2 top-2 bg-white/10 hover:bg-white/20"
+                className="p-2 text-gray-600 hover:text-black"
               >
-                <IoMdClose />
+                <IoMdClose size={22} />
               </button>
+            </div>
 
-              {/* Modal Header */}
-              <div className="bg-[#52B5D1] p-6 text-center rounded-md">
-                <div className="w-24 h-24 mx-auto mb-4 overflow-hidden border-4 border-white rounded-full">
-                  <img src={userImage} className="object-cover w-full h-full" alt="User" />
+            {/* User & Payment Info */}
+            <div className="space-y-6">
+              {/* Top Profile Card */}
+              <div className="flex items-center gap-4 p-4 bg-[#E0F2F7] rounded-lg">
+                <img
+                  src={userImage}
+                  className="w-16 h-16 rounded-full border-2 border-[#39b4c0]"
+                  alt="User"
+                />
+                <div>
+                  <h3 className="text-lg font-bold">
+                    {selectedUser.payable_name}
+                  </h3>
+                  
+                  <p className="text-gray-600">{selectedUser.payable_email}</p>
+                  <p className="text-sm text-gray-500">
+                    Account Type:{" "}
+                    {selectedUser.driverId &&
+                    Object.keys(selectedUser.driverId).length > 0
+                      ? "Driver"
+                      : "User"}
+                  </p>
                 </div>
-                <h2 className="text-xl font-bold text-white">
-                  {selectedUser.payable_name}
-                </h2>
               </div>
 
-              {/* Modal Content */}
-              <div className="p-6">
-                <div className="flex flex-col gap-4">
-                  <div className="flex justify-between">
-                    <div className="w-2/3">
-                      <h3 className="font-bold text-black ">Email</h3>
-                      <p className="text-gray-700">{selectedUser.payable_email}</p>
-                    </div>
-                    <div className="w-1/3">
-                      <h3 className="font-bold text-black">Account Type</h3>
-                      <p className="text-gray-700">{selectedUser.driverId ? "Driver" : "User"}</p>
-                    </div>
-                  </div>
+              {/* Payment Info Grid */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="p-3 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">Amount</h4>
+                  <p className="text-gray-900">
+                    {selectedUser.price} {selectedUser.currency.toUpperCase()}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">
+                    Payment Method
+                  </h4>
+                  <p className="text-gray-900">{selectedUser.paymentmethod}</p>
+                </div>
 
-                  <div className="flex justify-between">
-                    <div className="w-2/3">
-                      <h3 className="font-bold text-black">Date Joined</h3>
-                      <p className="text-gray-700">{new Date(selectedUser.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    <div className="w-1/3">
-                      <h3 className="font-bold text-black">Location</h3>
-                      <p className="text-gray-700">{selectedUser.country}</p>
-                    </div>
-                  </div>
+                <div className="p-3 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">
+                    Payment Status
+                  </h4>
+                  <p
+                    className={`font-bold ${
+                      selectedUser.payment_status === "paid"
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {selectedUser.payment_status}
+                  </p>
                 </div>
-                {/* Social Media Buttons */}
-                <div className="mt-6">
-                  <h3 className="mb-2 font-semibold text-black">
-                    Attach File
-                  </h3>
-                  <div className="flex space-x-2">
-                  </div>
+
+                <div className="p-3 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">Date</h4>
+                  <p className="text-gray-900">
+                    {new Date(selectedUser.createdAt).toLocaleString()}
+                  </p>
                 </div>
+
+                <div className="p-3 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">Driver Amount</h4>
+                  <p className="text-gray-900">{selectedUser.driverAmount}</p>
+                </div>
+
+                <div className="p-3 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">Admin Amount</h4>
+                  <p className="text-gray-900">{selectedUser.adminAmount}</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="p-4 rounded-lg bg-gray-50">
+                <h4 className="font-semibold text-gray-700">Description</h4>
+                <p className="text-gray-900">{selectedUser.description}</p>
+              </div>
+
+              {/* Extra Fields */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="p-3 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">
+                    Payment Intent
+                  </h4>
+                  <p className="text-gray-900 break-all">
+                    {selectedUser.payment_intent}
+                  </p>
+                </div>
+                <div className="p-3 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">Session ID</h4>
+                  <p className="text-gray-900 break-all">
+                    {selectedUser.sessionId}
+                  </p>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="p-4 rounded-lg bg-gray-50">
+                <h4 className="font-semibold text-gray-700">Country</h4>
+                <p className="text-gray-900">{selectedUser.country}</p>
               </div>
             </div>
           </div>
