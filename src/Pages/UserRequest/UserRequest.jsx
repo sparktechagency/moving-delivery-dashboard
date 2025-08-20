@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { EyeOutlined } from "@ant-design/icons";
-import {
-  IoIosArrowBack,
-  IoIosArrowForward,
-  IoIosCheckmarkCircle,
-  IoMdClose,
-} from "react-icons/io";
+import { IoIosArrowBack, IoIosArrowForward, IoIosCheckmarkCircle, IoMdClose } from "react-icons/io";
 import { MdBlock } from "react-icons/md";
-import userImage from "../../assets/image/admin.jpg";
-import { useGetDriverQuery } from "../../features/api/driverRequest";
+import { useAcceptDriverMutation, useBlockDriverMutation, useGetDriverQuery } from "../../features/api/driverRequest";
 
 function UserRequest() {
   const { data: responseData, error, isLoading } = useGetDriverQuery();
+  const [acceptDriver] = useAcceptDriverMutation();
+  const [blockDriver] = useBlockDriverMutation();
 
   const apiData = responseData?.data?.all_driver_verification;
 
@@ -52,8 +48,8 @@ function UserRequest() {
         isVerifyDriverNid: item.isVerifyDriverNid,
         isReadyToDrive: item.isReadyToDrive,
         coordinates: item.autoDetectLocation || ["N/A", "N/A"],
-        originalId: item._id,
-        userId: item.userId?._id,
+        originalId: item._id,         
+        userId: item.userId?._id,     
       }));
       setTransformedUsers(transformed);
       setFilteredUsers(transformed);
@@ -83,9 +79,7 @@ function UserRequest() {
   const indexOfFirstUser = indexOfLastUser - pageSize;
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
-  const onPageChange = (page) => {
-    setCurrentPage(page);
-  };
+  const onPageChange = (page) => setCurrentPage(page);
 
   const handleViewUser = (user) => {
     setSelectedUser(user);
@@ -103,6 +97,32 @@ function UserRequest() {
   };
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
+
+  const handleConfirmAccept = async (driver) => {
+    try {
+      await acceptDriver({
+        id: driver.originalId,   
+        driverId: driver.userId,
+      }).unwrap();
+      console.log("Driver accepted!");
+      setIsModalAccept(false);
+    } catch (err) {
+      console.error("Accept failed", err);
+    }
+  };
+
+  const handleConfirmBlock = async (driver) => {
+    try {
+      await blockDriver({
+        id: driver.originalId,   
+        driverId: driver.userId, 
+      }).unwrap();
+      console.log("Driver blocked!");
+      setIsModalBlock(false);
+    } catch (err) {
+      console.error("Block failed", err);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -144,7 +164,6 @@ function UserRequest() {
             <thead>
               <tr className="bg-[#E0F2F7] text-gray-700">
                 <th className="px-4 py-3 text-left">Serial</th>
-                {/* <th className="px-4 py-3 text-left">Users</th> */}
                 <th className="px-4 py-3 text-left">Name</th>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Date</th>
@@ -156,9 +175,6 @@ function UserRequest() {
                 currentUsers.map((user, index) => (
                   <tr key={index} className="bg-[#4BADC9]">
                     <td className="px-4 my-3 text-white">{user.id}</td>
-                    {/* <td className="px-4 my-3 overflow-hidden text-white w-11 h-11">
-                      <img className="rounded-full w-11 h-11" src={userImage} alt="user" />
-                    </td> */}
                     <td className="px-4 my-3 text-white">{user.name}</td>
                     <td className="px-4 my-3 text-white">{user.email}</td>
                     <td className="px-4 my-3 text-white">{user.date}</td>
@@ -229,7 +245,8 @@ function UserRequest() {
         )}
       </div>
 
-      {/* ================= Modal for user details ============= */}
+      {/* ================= Modals ================= */}
+      {/* User Details Modal */}
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-2xl p-4 overflow-hidden bg-white rounded-md max-h-[90vh] overflow-y-auto">
@@ -241,29 +258,21 @@ function UserRequest() {
                 <IoMdClose />
               </button>
               <div className="bg-[#52B5D1] p-6 text-center rounded-md">
-                {/* <div className="w-24 h-24 mx-auto mb-4 overflow-hidden border-4 border-white rounded-full">
-                  <img src={userImage} className="object-cover w-full h-full" alt="User" />
-                </div> */}
-                <h2 className="text-xl font-bold text-white">
-                  {selectedUser.name}
-                </h2>
+                <h2 className="text-xl font-bold text-white">{selectedUser.name}</h2>
                 <p className="text-white/80">{selectedUser.accType}</p>
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {/* Personal Info */}
                   <div className="space-y-4">
-                    <h3 className="pb-2 text-lg font-bold text-black border-b">
-                      Personal Information
-                    </h3>
+                    <h3 className="pb-2 text-lg font-bold text-black border-b">Personal Information</h3>
                     <div>
                       <h4 className="font-semibold text-black">Email</h4>
                       <p className="text-gray-700">{selectedUser.email}</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Phone Number</h4>
-                      <p className="text-gray-700">
-                        {selectedUser.phoneNumber}
-                      </p>
+                      <p className="text-gray-700">{selectedUser.phoneNumber}</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Date Joined</h4>
@@ -271,55 +280,35 @@ function UserRequest() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Location</h4>
-                      <p className="text-gray-700">
-                        {selectedUser.driverLocation}
-                      </p>
+                      <p className="text-gray-700">{selectedUser.driverLocation}</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">
-                        Pick-up Cities
-                      </h4>
-                      <p className="text-gray-700">
-                        {selectedUser.picCities}, {selectedUser.picState}
-                      </p>
+                      <h4 className="font-semibold text-black">Pick-up Cities</h4>
+                      <p className="text-gray-700">{selectedUser.picCities}, {selectedUser.picState}</p>
                     </div>
                   </div>
+
+                  {/* Vehicle Info */}
                   <div className="space-y-4">
-                    <h3 className="pb-2 text-lg font-bold text-black border-b">
-                      Vehicle Information
-                    </h3>
+                    <h3 className="pb-2 text-lg font-bold text-black border-b">Vehicle Information</h3>
                     <div>
-                      <h4 className="font-semibold text-black">
-                        Vehicle Number
-                      </h4>
-                      <p className="text-gray-700">
-                        {selectedUser.vehicleNumber}
-                      </p>
+                      <h4 className="font-semibold text-black">Vehicle Number</h4>
+                      <p className="text-gray-700">{selectedUser.vehicleNumber}</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">
-                        Truck Category
-                      </h4>
-                      <p className="text-gray-700 capitalize">
-                        {selectedUser.truckcategories}
-                      </p>
+                      <h4 className="font-semibold text-black">Truck Category</h4>
+                      <p className="text-gray-700 capitalize">{selectedUser.truckcategories}</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Truck Size</h4>
                       <p className="text-gray-700">{selectedUser.truckSize}</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">
-                        Load Capacity
-                      </h4>
-                      <p className="text-gray-700">
-                        {selectedUser.loadCapacity}
-                      </p>
+                      <h4 className="font-semibold text-black">Load Capacity</h4>
+                      <p className="text-gray-700">{selectedUser.loadCapacity}</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">
-                        Ready to Drive
-                      </h4>
+                      <h4 className="font-semibold text-black">Ready to Drive</h4>
                       <p className="text-gray-700">
                         <span
                           className={`px-2 py-1 rounded-full text-xs ${
@@ -334,101 +323,27 @@ function UserRequest() {
                     </div>
                   </div>
                 </div>
+
+                {/* Verification Status */}
                 <div className="mt-6">
-                  <h3 className="pb-2 text-lg font-bold text-black border-b">
-                    Verification Status
-                  </h3>
+                  <h3 className="pb-2 text-lg font-bold text-black border-b">Verification Status</h3>
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                      <h4 className="font-semibold text-black">
-                        Driver License
-                      </h4>
+                      <h4 className="font-semibold text-black">Driver License</h4>
                       <p className="text-gray-700">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            selectedUser.isVerifyDriverLicense
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {selectedUser.isVerifyDriverLicense
-                            ? "Verified"
-                            : "Not Verified"}
+                        <span className={`px-2 py-1 rounded-full text-xs ${selectedUser.isVerifyDriverLicense ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                          {selectedUser.isVerifyDriverLicense ? "Verified" : "Not Verified"}
                         </span>
                       </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">NID Card</h4>
                       <p className="text-gray-700">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            selectedUser.isVerifyDriverNid
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {selectedUser.isVerifyDriverNid
-                            ? "Verified"
-                            : "Not Verified"}
+                        <span className={`px-2 py-1 rounded-full text-xs ${selectedUser.isVerifyDriverNid ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                          {selectedUser.isVerifyDriverNid ? "Verified" : "Not Verified"}
                         </span>
                       </p>
                     </div>
-                  </div>
-                </div>
-                <div className="mt-6">
-                  <h3 className="pb-2 text-lg font-bold text-black border-b">
-                    Documents
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <div>
-                      <h4 className="mb-2 font-semibold text-black">
-                        Driver License
-                      </h4>
-                      <div className="p-2 border rounded-md">
-                        {/* Corrected: Show the actual image if it exists */}
-                        {selectedUser.driverLicense ? (
-                          <img
-                            src={`${selectedUser.driverLicense}`}
-                            alt="Driver License"
-                            className="object-cover w-full h-32 rounded"
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center w-full h-32 text-gray-500 bg-gray-200 rounded">
-                            No Image Found
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="mb-2 font-semibold text-black">
-                        NID Card
-                      </h4>
-                      <div className="p-2 border rounded-md">
-                        {/* Corrected: Show the actual image if it exists */}
-                        {selectedUser.driverNidCard ? (
-                          <img
-                            src={`${selectedUser.driverNidCard}`}
-                            alt="NID Card"
-                            className="object-cover w-full h-32 rounded"
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center w-full h-32 text-gray-500 bg-gray-200 rounded">
-                            No Image Found
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-6">
-                  <h3 className="pb-2 text-lg font-bold text-black border-b">
-                    Location Coordinates
-                  </h3>
-                  <div className="mt-4">
-                    <p className="text-gray-700">
-                      Latitude: {selectedUser.coordinates[0]}, Longitude:{" "}
-                      {selectedUser.coordinates[1]}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -437,7 +352,7 @@ function UserRequest() {
         </div>
       )}
 
-      {/* ================= Modal for Block Users ============= */}
+      {/* Block Modal */}
       {isModalBlock && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md overflow-hidden bg-white rounded-md">
@@ -449,11 +364,12 @@ function UserRequest() {
                 <IoMdClose />
               </button>
               <div className="flex flex-col items-center justify-center py-12 space-y-4 px-11">
-                <h2 className="text-xl font-bold text-[#39b4c0]">
-                  Are You Sure You Want to Block?
-                </h2>
+                <h2 className="text-xl font-bold text-[#39b4c0]">Are You Sure You Want to Block?</h2>
                 <p>Do you want to Block {selectedUser.name}'s profile?</p>
-                <button className="px-8 py-3 font-semibold text-white bg-red-500 rounded-md">
+                <button
+                  onClick={() => handleConfirmBlock(selectedUser)}
+                  className="px-8 py-3 font-semibold text-white bg-red-500 rounded-md"
+                >
                   Confirm Block
                 </button>
               </div>
@@ -462,7 +378,7 @@ function UserRequest() {
         </div>
       )}
 
-      {/* ================= Modal for Accept Users ============= */}
+      {/* Accept Modal */}
       {isModalAccept && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md overflow-hidden bg-white rounded-md">
@@ -474,11 +390,12 @@ function UserRequest() {
                 <IoMdClose />
               </button>
               <div className="flex flex-col items-center justify-center py-12 space-y-4 px-11">
-                <h2 className="text-xl font-bold text-[#39b4c0]">
-                  Are You Sure?
-                </h2>
+                <h2 className="text-xl font-bold text-[#39b4c0]">Are You Sure?</h2>
                 <p>Do you want to Accept {selectedUser.name}'s profile?</p>
-                <button className="bg-[#52B5D1] py-3 px-8 rounded-md font-semibold text-white">
+                <button
+                  onClick={() => handleConfirmAccept(selectedUser)}
+                  className="bg-[#52B5D1] py-3 px-8 rounded-md font-semibold text-white"
+                >
                   Confirm Accept
                 </button>
               </div>
