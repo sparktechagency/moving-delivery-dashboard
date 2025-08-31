@@ -186,11 +186,11 @@ function Earnings() {
             <div className="space-y-6">
               {/* Top Profile Card */}
               <div className="flex items-center gap-4 p-4 bg-[#E0F2F7] rounded-lg">
-                <img
+                {/* <img
                   src={userImage}
                   className="w-16 h-16 rounded-full border-2 border-[#39b4c0]"
                   alt="User"
-                />
+                /> */}
                 <div>
                   <h3 className="text-lg font-bold">
                     {selectedUser.payable_name}

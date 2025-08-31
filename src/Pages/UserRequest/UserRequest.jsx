@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { EyeOutlined } from "@ant-design/icons";
-import { IoIosArrowBack, IoIosArrowForward, IoIosCheckmarkCircle, IoMdClose } from "react-icons/io";
+import {
+  IoIosArrowBack,
+  IoIosArrowForward,
+  IoIosCheckmarkCircle,
+  IoMdClose,
+} from "react-icons/io";
 import { MdBlock } from "react-icons/md";
-import { useAcceptDriverMutation, useBlockDriverMutation, useGetDriverQuery } from "../../features/api/driverRequest";
+import {
+  useAcceptDriverMutation,
+  useBlockDriverMutation,
+  useGetDriverQuery,
+} from "../../features/api/driverRequest";
 
 function UserRequest() {
   const { data: responseData, error, isLoading } = useGetDriverQuery();
@@ -20,6 +29,41 @@ function UserRequest() {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+
+  // useEffect(() => {
+  //   if (apiData && Array.isArray(apiData)) {
+  //     const transformed = apiData.map((item, index) => ({
+  //       id: `${String(index + 1).padStart(2, "0")}`,
+  //       name: item.userId?.name || "N/A",
+  //       email: item.userId?.email || "N/A",
+  //       phoneNumber: item.userId?.phoneNumber || "N/A",
+  //       date: new Date(item.createdAt).toLocaleDateString("en-GB", {
+  //         day: "2-digit",
+  //         month: "short",
+  //         year: "numeric",
+  //       }),
+  //       accType: "Driver",
+  //       driverLocation: item.driverLocation || "N/A",
+  //       vehicleNumber: item.vehicleNumber || "N/A",
+  //       truckSize: item.truckSize || "N/A",
+  //       loadCapacity: item.loadCapacity || "N/A",
+  //       truckcategories: item.driverSelectedTruck?.truckcategories || "N/A",
+  //       truckPhoto: item.driverSelectedTruck?.photo,
+  //       picCities: item.picCities || "N/A",
+  //       picState: item.picState || "N/A",
+  //       driverLicense: item.driverLicense,
+  //       driverNidCard: item.driverNidCard,
+  //       isVerifyDriverLicense: item.isVerifyDriverLicense,
+  //       isVerifyDriverNid: item.isVerifyDriverNid,
+  //       isReadyToDrive: item.isReadyToDrive,
+  //       coordinates: item.autoDetectLocation || ["N/A", "N/A"],
+  //       originalId: item._id,
+  //       userId: item.userId?._id,
+  //     }));
+  //     setTransformedUsers(transformed);
+  //     setFilteredUsers(transformed);
+  //   }
+  // }, [apiData]);
 
   useEffect(() => {
     if (apiData && Array.isArray(apiData)) {
@@ -48,14 +92,16 @@ function UserRequest() {
         isVerifyDriverNid: item.isVerifyDriverNid,
         isReadyToDrive: item.isReadyToDrive,
         coordinates: item.autoDetectLocation || ["N/A", "N/A"],
-        originalId: item._id,         
-        userId: item.userId?._id,     
+        originalId: item._id,
+        userId: item.userId?._id,
+
+        // ➕ NEW FIELD
+        status: "pending",
       }));
       setTransformedUsers(transformed);
       setFilteredUsers(transformed);
     }
   }, [apiData]);
-
   const handleSearch = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
@@ -98,31 +144,83 @@ function UserRequest() {
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
+  // ========= Accept ==========
   const handleConfirmAccept = async (driver) => {
     try {
       await acceptDriver({
-        id: driver.originalId,   
+        id: driver.originalId,
         driverId: driver.userId,
       }).unwrap();
-      console.log("Driver accepted!");
+
+      // Update state locally
+      setTransformedUsers((prev) =>
+        prev.map((u) =>
+          u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
+        )
+      );
+      setFilteredUsers((prev) =>
+        prev.map((u) =>
+          u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
+        )
+      );
+
       setIsModalAccept(false);
     } catch (err) {
       console.error("Accept failed", err);
     }
   };
 
+  // ========= Block ==========
   const handleConfirmBlock = async (driver) => {
     try {
       await blockDriver({
-        id: driver.originalId,   
-        driverId: driver.userId, 
+        id: driver.originalId,
+        driverId: driver.userId,
       }).unwrap();
-      console.log("Driver blocked!");
+
+      // Reset back to pending (or "blocked" if you prefer)
+      setTransformedUsers((prev) =>
+        prev.map((u) =>
+          u.originalId === driver.originalId ? { ...u, status: "pending" } : u
+        )
+      );
+      setFilteredUsers((prev) =>
+        prev.map((u) =>
+          u.originalId === driver.originalId ? { ...u, status: "pending" } : u
+        )
+      );
+
       setIsModalBlock(false);
     } catch (err) {
       console.error("Block failed", err);
     }
   };
+
+  // const handleConfirmAccept = async (driver) => {
+  //   try {
+  //     await acceptDriver({
+  //       id: driver.originalId,
+  //       driverId: driver.userId,
+  //     }).unwrap();
+  //     console.log("Driver accepted!");
+  //     setIsModalAccept(false);
+  //   } catch (err) {
+  //     console.error("Accept failed", err);
+  //   }
+  // };
+
+  // const handleConfirmBlock = async (driver) => {
+  //   try {
+  //     await blockDriver({
+  //       id: driver.originalId,
+  //       driverId: driver.userId,
+  //     }).unwrap();
+  //     console.log("Driver blocked!");
+  //     setIsModalBlock(false);
+  //   } catch (err) {
+  //     console.error("Block failed", err);
+  //   }
+  // };
 
   if (isLoading) {
     return (
@@ -187,7 +285,11 @@ function UserRequest() {
                       </button>
                       <button
                         onClick={() => handleAcceptUser(user)}
-                        className="text-green-400 hover:text-gray-200"
+                        className={`hover:text-gray-200 ${
+                          user.status === "accepted"
+                            ? "text-green-600"
+                            : "text-green-400"
+                        }`}
                       >
                         <IoIosCheckmarkCircle size={20} />
                       </button>
@@ -258,21 +360,27 @@ function UserRequest() {
                 <IoMdClose />
               </button>
               <div className="bg-[#52B5D1] p-6 text-center rounded-md">
-                <h2 className="text-xl font-bold text-white">{selectedUser.name}</h2>
+                <h2 className="text-xl font-bold text-white">
+                  {selectedUser.name}
+                </h2>
                 <p className="text-white/80">{selectedUser.accType}</p>
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   {/* Personal Info */}
                   <div className="space-y-4">
-                    <h3 className="pb-2 text-lg font-bold text-black border-b">Personal Information</h3>
+                    <h3 className="pb-2 text-lg font-bold text-black border-b">
+                      Personal Information
+                    </h3>
                     <div>
                       <h4 className="font-semibold text-black">Email</h4>
                       <p className="text-gray-700">{selectedUser.email}</p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Phone Number</h4>
-                      <p className="text-gray-700">{selectedUser.phoneNumber}</p>
+                      <p className="text-gray-700">
+                        {selectedUser.phoneNumber}
+                      </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Date Joined</h4>
@@ -280,35 +388,57 @@ function UserRequest() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Location</h4>
-                      <p className="text-gray-700">{selectedUser.driverLocation}</p>
+                      <p className="text-gray-700">
+                        {selectedUser.driverLocation}
+                      </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">Pick-up Cities</h4>
-                      <p className="text-gray-700">{selectedUser.picCities}, {selectedUser.picState}</p>
+                      <h4 className="font-semibold text-black">
+                        Pick-up Cities
+                      </h4>
+                      <p className="text-gray-700">
+                        {selectedUser.picCities}, {selectedUser.picState}
+                      </p>
                     </div>
                   </div>
 
                   {/* Vehicle Info */}
                   <div className="space-y-4">
-                    <h3 className="pb-2 text-lg font-bold text-black border-b">Vehicle Information</h3>
+                    <h3 className="pb-2 text-lg font-bold text-black border-b">
+                      Vehicle Information
+                    </h3>
                     <div>
-                      <h4 className="font-semibold text-black">Vehicle Number</h4>
-                      <p className="text-gray-700">{selectedUser.vehicleNumber}</p>
+                      <h4 className="font-semibold text-black">
+                        Vehicle Number
+                      </h4>
+                      <p className="text-gray-700">
+                        {selectedUser.vehicleNumber}
+                      </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">Truck Category</h4>
-                      <p className="text-gray-700 capitalize">{selectedUser.truckcategories}</p>
+                      <h4 className="font-semibold text-black">
+                        Truck Category
+                      </h4>
+                      <p className="text-gray-700 capitalize">
+                        {selectedUser.truckcategories}
+                      </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">Truck Size</h4>
                       <p className="text-gray-700">{selectedUser.truckSize}</p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">Load Capacity</h4>
-                      <p className="text-gray-700">{selectedUser.loadCapacity}</p>
+                      <h4 className="font-semibold text-black">
+                        Load Capacity
+                      </h4>
+                      <p className="text-gray-700">
+                        {selectedUser.loadCapacity}
+                      </p>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-black">Ready to Drive</h4>
+                      <h4 className="font-semibold text-black">
+                        Ready to Drive
+                      </h4>
                       <p className="text-gray-700">
                         <span
                           className={`px-2 py-1 rounded-full text-xs ${
@@ -326,21 +456,41 @@ function UserRequest() {
 
                 {/* Verification Status */}
                 <div className="mt-6">
-                  <h3 className="pb-2 text-lg font-bold text-black border-b">Verification Status</h3>
+                  <h3 className="pb-2 text-lg font-bold text-black border-b">
+                    Verification Status
+                  </h3>
                   <div className="grid grid-cols-2 gap-4 mt-4">
                     <div>
-                      <h4 className="font-semibold text-black">Driver License</h4>
+                      <h4 className="font-semibold text-black">
+                        Driver License
+                      </h4>
                       <p className="text-gray-700">
-                        <span className={`px-2 py-1 rounded-full text-xs ${selectedUser.isVerifyDriverLicense ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                          {selectedUser.isVerifyDriverLicense ? "Verified" : "Not Verified"}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            selectedUser.isVerifyDriverLicense
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {selectedUser.isVerifyDriverLicense
+                            ? "Verified"
+                            : "Not Verified"}
                         </span>
                       </p>
                     </div>
                     <div>
                       <h4 className="font-semibold text-black">NID Card</h4>
                       <p className="text-gray-700">
-                        <span className={`px-2 py-1 rounded-full text-xs ${selectedUser.isVerifyDriverNid ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                          {selectedUser.isVerifyDriverNid ? "Verified" : "Not Verified"}
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${
+                            selectedUser.isVerifyDriverNid
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {selectedUser.isVerifyDriverNid
+                            ? "Verified"
+                            : "Not Verified"}
                         </span>
                       </p>
                     </div>
@@ -364,7 +514,9 @@ function UserRequest() {
                 <IoMdClose />
               </button>
               <div className="flex flex-col items-center justify-center py-12 space-y-4 px-11">
-                <h2 className="text-xl font-bold text-[#39b4c0]">Are You Sure You Want to Block?</h2>
+                <h2 className="text-xl font-bold text-[#39b4c0]">
+                  Are You Sure You Want to Block?
+                </h2>
                 <p>Do you want to Block {selectedUser.name}'s profile?</p>
                 <button
                   onClick={() => handleConfirmBlock(selectedUser)}
@@ -390,7 +542,9 @@ function UserRequest() {
                 <IoMdClose />
               </button>
               <div className="flex flex-col items-center justify-center py-12 space-y-4 px-11">
-                <h2 className="text-xl font-bold text-[#39b4c0]">Are You Sure?</h2>
+                <h2 className="text-xl font-bold text-[#39b4c0]">
+                  Are You Sure?
+                </h2>
                 <p>Do you want to Accept {selectedUser.name}'s profile?</p>
                 <button
                   onClick={() => handleConfirmAccept(selectedUser)}
