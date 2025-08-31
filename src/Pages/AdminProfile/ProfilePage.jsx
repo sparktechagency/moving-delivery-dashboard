@@ -65,7 +65,7 @@ function ProfilePage() {
               <div className="p-5 mt-10 ">
                 <div className="w-[122px] relative h-[122px] mx-auto bg-gray-300 rounded-full border-4 border-white shadow-xl flex justify-center items-center">
                   <img
-                    src={profilePic}
+                    src="https://png.pngtree.com/png-vector/20220719/ourmid/pngtree-color-icon---businessman-icon-color-sign-vectorteamwork-account-admin-photo-image_37961448.jpg"
                     alt="profile"
                     className="object-cover w-32 h-32 rounded-full"
                   />
@@ -158,7 +158,7 @@ function ProfilePage() {
               {activeTab === "profile" && (
                 <Profile setActiveTab={setActiveTab} />
               )}
-              {activeTab === "editProfile" && <EditProfile />}
+              {activeTab === "editProfile" && <Profile />}
               {activeTab === "changePassword" && <ChangePass />}
             </div>
           </div>

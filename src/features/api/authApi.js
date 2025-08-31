@@ -26,6 +26,13 @@ export const authApi = createApi({
       }),
     }),
 
+     getMyProfile: builder.query({
+      query: () => ({
+        url: "/v1/auth/myprofile",
+        method: "GET",
+      }),
+    }),
+
     // 🔹 Update Profile
     updateProfile: builder.mutation({
       query: (data) => {
@@ -49,5 +56,6 @@ export const authApi = createApi({
 
 export const { 
   useSigninMutation, 
-  useUpdateProfileMutation 
+  useUpdateProfileMutation ,
+  useGetMyProfileQuery
 } = authApi;
