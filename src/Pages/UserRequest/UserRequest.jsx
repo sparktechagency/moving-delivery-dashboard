@@ -283,16 +283,24 @@ function UserRequest() {
                       >
                         <EyeOutlined size={20} />
                       </button>
-                      <button
-                        onClick={() => handleAcceptUser(user)}
-                        className={`hover:text-gray-200 ${
-                          user.status === "accepted"
-                            ? "text-green-600"
-                            : "text-green-400"
-                        }`}
-                      >
-                        <IoIosCheckmarkCircle size={20} />
-                      </button>
+                      {apiData.isVerifyDriverLicense &&
+                      apiData.isVerifyDriverNid &&
+                      apiData.isReadyToDrive ? (
+                        <button
+                          onClick={() => handleAcceptUser(user)}
+                          className={`hover:text-gray-200 ${
+                            user.status === "accepted"
+                              ? "text-green-600"
+                              : "text-green-400"
+                          }`}
+                        >
+                          <IoIosCheckmarkCircle size={20} />
+                        </button>
+                      ) : (
+                        <span className="bg-green-600 text-white px-2 rounded-lg">
+                          Verified
+                        </span>
+                      )}
                       <button
                         onClick={() => handleBlockUser(user)}
                         className="text-red-500 hover:text-red-300"
