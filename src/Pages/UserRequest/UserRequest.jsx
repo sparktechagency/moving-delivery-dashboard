@@ -20,6 +20,8 @@ function UserRequest() {
 
   const apiData = responseData?.data?.all_driver_verification;
 
+  console.log(responseData)
+
   const [transformedUsers, setTransformedUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalAccept, setIsModalAccept] = useState(false);
@@ -297,7 +299,7 @@ function UserRequest() {
                           <IoIosCheckmarkCircle size={20} />
                         </button>
                       ) : (
-                        <span className="bg-green-600 text-white px-2 rounded-lg">
+                        <span className="px-2 text-white bg-green-600 rounded-lg">
                           Verified
                         </span>
                       )}

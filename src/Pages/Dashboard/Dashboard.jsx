@@ -26,6 +26,8 @@ const Dashboard = () => {
   // Safely extract users
   const users = usersData?.data?.users || [];
 
+  console.log(users)
+
   // Extract totalAmount safely (fallback to 0 if not available)
   const totalAmount = earningsData?.data?.totalAmount || 0;
 

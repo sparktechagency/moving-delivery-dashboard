@@ -2,15 +2,15 @@ import React, { useState, useEffect } from "react";
 import { EyeOutlined } from "@ant-design/icons";
 import { IoIosArrowBack, IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { MdBlock } from "react-icons/md";
-import userImage from "../../assets/image/admin.jpg";
 import { useGetAllPaymentsQuery } from "../../features/api/allPayment";
-import { CloudCog } from "lucide-react";
 
 function Earnings() {
   const { data, isLoading, isError } = useGetAllPaymentsQuery({
     page: 1,
     limit: 10,
   });
+
+  console.log(data)
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalBlock, setIsModalBlock] = useState(false);
