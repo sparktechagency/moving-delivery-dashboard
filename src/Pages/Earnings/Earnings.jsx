@@ -3,6 +3,7 @@ import { EyeOutlined } from "@ant-design/icons";
 import { IoIosArrowBack, IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { MdBlock } from "react-icons/md";
 import { useGetAllPaymentsQuery } from "../../features/api/allPayment";
+import { TbArrowsRightLeft } from "react-icons/tb";
 
 function Earnings() {
   const { data, isLoading, isError } = useGetAllPaymentsQuery({
@@ -10,7 +11,7 @@ function Earnings() {
     limit: 10,
   });
 
-  console.log(data)
+  console.log(data);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalBlock, setIsModalBlock] = useState(false);
@@ -31,23 +32,31 @@ function Earnings() {
   if (isError) return <p>Something went wrong!</p>;
 
   // for user search functionality
-  const handleSearch = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    if (data && data.data && data.data.payments) {
-      if (term.trim() === "") {
-        setFilteredUsers(data.data.payments);
-      } else {
-        const filtered = data.data.payments.filter(
-          (user) =>
-            user.payable_name.toLowerCase().includes(term.toLowerCase()) ||
-            user.payable_email.toLowerCase().includes(term.toLowerCase())
+ const handleSearch = (e) => {
+  const term = e.target.value;
+  setSearchTerm(term);
+
+  if (data?.data?.payments) {
+    if (term.trim() === "") {
+      setFilteredUsers(data.data.payments);
+    } else {
+      const filtered = data.data.payments.filter((user) => {
+        const name = user.payable_name?.toLowerCase() || "";
+        const email = user.payable_email?.toLowerCase() || "";
+
+        return (
+          name.includes(term.toLowerCase()) ||
+          email.includes(term.toLowerCase())
         );
-        setFilteredUsers(filtered);
-      }
+      });
+
+      setFilteredUsers(filtered);
     }
-    setCurrentPage(1);
-  };
+  }
+
+  setCurrentPage(1);
+};
+
 
   // for pagination functionality
   const indexOfLastUser = currentPage * pageSize;
@@ -74,7 +83,27 @@ function Earnings() {
     <>
       <div className="h-[calc(100vh-80px)] bg-[#E0F2F7] mt-16">
         {/* Header with search */}
-        <div className="bg-[#4BADC9] p-4 flex justify-end">
+        <div className="bg-[#4BADC9] p-4 flex justify-between items-center">
+          <div className="flex items-center justify-center gap-x-5 w-72 bg-[#C9E6ED] py-4 rounded-md">
+            <TbArrowsRightLeft />
+            <div className="flex gap-x-10">
+              <p className="font-semibold">All Earning</p>
+              <p className="font-bold">
+                $ {Number(data?.data?.totals?.totalAmount).toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center gap-x-5 w-96 bg-[#C9E6ED] py-4 rounded-md">
+            <TbArrowsRightLeft />
+            <div className="flex gap-x-10">
+              <p className="font-semibold">Total Admin Amount</p>
+              <p className="font-bold">
+                $ {Number(data?.data?.totals?.totalAdminAmount).toFixed(2)}
+              </p>
+            </div>
+          </div>
+
           <div className="w-72">
             <input
               type="text"
@@ -95,7 +124,9 @@ function Earnings() {
                 <th className="px-4 py-3 text-left">Name</th>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Date</th>
-                {/* <th className="px-4 py-3 text-left">Acc Type</th> */}
+                <th className="px-4 py-3 text-left">Price</th>
+                <th className="px-4 py-3 text-left">Admin Amount</th>
+                <th className="px-4 py-3 text-left">Driver Amount</th>
                 <th className="px-4 py-3 text-left">Action</th>
               </tr>
             </thead>
@@ -109,6 +140,16 @@ function Earnings() {
                   <td className="px-4 text-white">{user.payable_email}</td>
                   <td className="px-4 text-white">
                     {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 text-white">
+                    {Number(user.price).toFixed(2)} $
+                  </td>
+                  <td className="px-4 text-white">
+                    {Number(user.adminAmount).toFixed(2)} $
+                  </td>
+
+                  <td className="px-4 text-white">
+                    {Number(user.driverAmount).toFixed(2)} $
                   </td>
                   {/* <td className="px-4 text-white">
                     {user.driverId}
@@ -195,7 +236,7 @@ function Earnings() {
                   <h3 className="text-lg font-bold">
                     {selectedUser.payable_name}
                   </h3>
-                  
+
                   <p className="text-gray-600">{selectedUser.payable_email}</p>
                   <p className="text-sm text-gray-500">
                     Account Type:{" "}
