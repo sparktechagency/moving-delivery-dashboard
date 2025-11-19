@@ -7,7 +7,7 @@ export const userApi = createApi({
     baseUrl: `${BASE_URL}/api/v1`,
     prepareHeaders: (headers, { getState }) => {
       const token = getState().auth.token;
-      console.log("the token is" , token)
+      // console.log("the token is" , token)
       if (token) {
         headers.set("Authorization", token);
       }
@@ -18,7 +18,14 @@ export const userApi = createApi({
     getAllUsers: builder.query({
       query: () => "auth/find_by_admin_all_users",
     }),
+     updateUserStatus: builder.mutation({
+      query: ({ userId, status }) => ({
+        url: `auth/change_status/${userId}`,
+        method: "PATCH",
+        body: { status },
+      }),
+    }),
   }),
 });
 
-export const { useGetAllUsersQuery } = userApi;
+export const { useGetAllUsersQuery,useUpdateUserStatusMutation } = userApi;

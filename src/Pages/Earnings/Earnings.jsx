@@ -11,7 +11,7 @@ function Earnings() {
     limit: 10,
   });
 
-  console.log(data);
+  // console.log(data);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalBlock, setIsModalBlock] = useState(false);

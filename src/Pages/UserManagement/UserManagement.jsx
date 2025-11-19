@@ -2,27 +2,25 @@ import React, { useEffect, useState } from "react";
 import { EyeOutlined } from "@ant-design/icons";
 import { IoIosArrowBack, IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { MdBlock } from "react-icons/md";
-import userImage from "../../assets/image/admin.jpg";
-import { useGetAllUsersQuery } from "../../features/api/userManagementApi";
+import { useGetAllUsersQuery, useUpdateUserStatusMutation } from "../../features/api/userManagementApi";
+import { notification } from "antd"; // Import notification from Ant Design
 
 function UserManagement() {
   const { data, isLoading, error } = useGetAllUsersQuery();
+  const [updateUserStatus] = useUpdateUserStatusMutation();
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalBlock, setIsModalBlock] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 14;
-   
-  
 
   useEffect(() => {
     const allUsers = data?.data?.all_users || [];
     if (Array.isArray(allUsers)) {
       const formattedUsers = allUsers.map((user, index) => ({
-        id: `${index + 1}`,
+        id: user.id,
         name: user.name || "No Name",
         email: user.email || "No Email",
         date: new Date(user.createdAt).toLocaleDateString("en-US", {
@@ -31,6 +29,7 @@ function UserManagement() {
           year: "numeric",
         }),
         accType: user.role || "User",
+        status: user.status || "blocked", // Assuming 'blocked' as default
       }));
       setUsers(formattedUsers);
       setFilteredUsers(formattedUsers);
@@ -67,15 +66,42 @@ function UserManagement() {
     setIsModalOpen(true);
   };
 
-  const handleBlockUser = (user) => {
-    setSelectedUser(user);
-    setIsModalBlock(true);
+  const handleBlockUnblockUser = async (user) => {
+    const newStatus = user.status === "isProgress" ? "blocked" : "isProgress"; // Toggle status between 'isProgress' (unblocked) and 'blocked'
+    try {
+      await updateUserStatus({ userId: user.id, status: newStatus }).unwrap();
+      const updatedUsers = users.map((u) =>
+        u.id === user.id ? { ...u, status: newStatus } : u
+      );
+      setUsers(updatedUsers);
+      setFilteredUsers(updatedUsers);
+
+      // Show Ant Design notification
+      notification.success({
+        message: `${user.name} has been ${newStatus === 'blocked' ? 'blocked' : 'unblocked'}`,
+        description: `User ${newStatus === 'blocked' ? 'blocked' : 'unblocked'} successfully!`,
+        placement: "topRight",
+      });
+    } catch (err) {
+      console.error("Error updating user status:", err);
+      notification.error({
+        message: "Failed to update user status",
+        description: "There was an error while updating the user status.",
+        placement: "topRight",
+      });
+    }
   };
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
-  if (isLoading) return <div className="mt-10 text-center">Loading users...</div>;
-  if (error) return <div className="mt-10 text-center text-red-500">Failed to load users.</div>;
+  if (isLoading)
+    return <div className="mt-10 text-center">Loading users...</div>;
+  if (error)
+    return (
+      <div className="mt-10 text-center text-red-500">
+        Failed to load users.
+      </div>
+    );
 
   return (
     <>
@@ -107,7 +133,9 @@ function UserManagement() {
             <tbody>
               {currentUsers.map((user, index) => (
                 <tr key={index} className="bg-[#4BADC9]">
-                  <td className="px-4 text-white">{user.id}</td>
+                  <td className="px-4 text-white">
+                    {(index + 1).toString().padStart(2, "0")}
+                  </td> {/* Format serial number */}
                   <td className="px-4 text-white">{user.name}</td>
                   <td className="px-4 text-white">{user.email}</td>
                   <td className="px-4 text-white">{user.date}</td>
@@ -120,8 +148,12 @@ function UserManagement() {
                       <EyeOutlined size={20} />
                     </button>
                     <button
-                      onClick={() => handleBlockUser(user)}
-                      className="text-red-500 hover:text-red-300"
+                      onClick={() => handleBlockUnblockUser(user)}
+                      className={`text-${
+                        user.status === "isProgress" ? "green" : "red"
+                      }-500 hover:text-${
+                        user.status === "isProgress" ? "green" : "red"
+                      }-300`}
                     >
                       <MdBlock size={20} />
                     </button>
@@ -176,9 +208,6 @@ function UserManagement() {
               </button>
 
               <div className="bg-[#52B5D1] p-6 text-center rounded-md">
-                {/*<div className="w-24 h-24 mx-auto mb-4 overflow-hidden border-4 border-white rounded-full">
-                  <img src={userImage} className="object-cover w-full h-full"/>
-                </div> */}
                 <h2 className="text-xl font-bold text-white">
                   {selectedUser.name}
                 </h2>
@@ -212,32 +241,6 @@ function UserManagement() {
                 <div className="mt-6">
                   <h3 className="mb-2 font-semibold text-black">Attach File</h3>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Block Modal */}
-      {isModalBlock && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md overflow-hidden bg-white rounded-md">
-            <div className="relative">
-              <button
-                onClick={() => setIsModalBlock(false)}
-                className="absolute p-1 rounded-full right-2 top-2 bg-white/10 hover:bg-white/20"
-              >
-                <IoMdClose />
-              </button>
-
-              <div className="flex flex-col items-center justify-center py-12 space-y-4 px-11">
-                <h2 className="text-xl font-bold text-[#39b4c0]">
-                  Are You Sure You Want to Block?
-                </h2>
-                <p>Do you want to Block your User's profile?</p>
-                <button className="bg-[#52B5D1] py-3 px-8 rounded-md font-semibold text-white">
-                  Confirm
-                </button>
               </div>
             </div>
           </div>

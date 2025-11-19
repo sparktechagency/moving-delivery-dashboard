@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useGetMyProfileQuery, useUpdateProfileMutation } from "../../features/api/authApi";
+import { message } from "antd";
 
 function Profile() {
   const { data, error, isLoading, refetch } = useGetMyProfileQuery();
@@ -26,7 +27,7 @@ function Profile() {
         email: userData.email || "",
         phoneNumber: userData.phoneNumber || "",
         location: userData.location || "",
-        photo: null,
+        photo: userData.photo  || null, 
       });
     }
   }, [userData]);
@@ -47,10 +48,10 @@ function Profile() {
       await updateProfile(formData).unwrap();
       await refetch(); // refresh profile after update
       setIsEditing(false);
-      alert("Profile updated successfully ✅");
+      message.success("Profile updated successfully ✅");
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Failed to update profile ❌");
+      message.error("Failed to update profile ❌");
     }
   };
 
