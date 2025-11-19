@@ -67,7 +67,7 @@ function UserManagement() {
   };
 
   const handleBlockUnblockUser = async (user) => {
-    const newStatus = user.status === "isProgress" ? "blocked" : "isProgress"; // Toggle status between 'isProgress' (unblocked) and 'blocked'
+    const newStatus = user.status === "isProgress" ? "blocked" : "isProgress";
     try {
       await updateUserStatus({ userId: user.id, status: newStatus }).unwrap();
       const updatedUsers = users.map((u) =>
