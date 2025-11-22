@@ -161,12 +161,7 @@ function Earnings() {
                     >
                       <EyeOutlined size={20} />
                     </button>
-                    <button
-                      onClick={() => handleBlockUser(user)}
-                      className="text-red-500 hover:text-red-300"
-                    >
-                      <MdBlock size={20} />
-                    </button>
+        
                   </td>
                 </tr>
               ))}

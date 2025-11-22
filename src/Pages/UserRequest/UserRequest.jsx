@@ -12,6 +12,7 @@ import {
   useBlockDriverMutation,
   useGetDriverQuery,
 } from "../../features/api/driverRequest";
+import { message } from "antd";
 
 function UserRequest() {
   const { data: responseData, error, isLoading } = useGetDriverQuery();
@@ -20,7 +21,7 @@ function UserRequest() {
 
   const apiData = responseData?.data?.all_driver_verification;
 
-  console.log(responseData)
+  // console.log(responseData);
 
   const [transformedUsers, setTransformedUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -167,10 +168,13 @@ function UserRequest() {
       );
 
       setIsModalAccept(false);
+      message.success(`${driver.name} has been accepted successfully!`);
     } catch (err) {
       console.error("Accept failed", err);
+      message.error("Failed to accept user. Try again!");
     }
   };
+  // console.log(driver.originalId)
 
   // ========= Block ==========
   const handleConfirmBlock = async (driver) => {
@@ -193,36 +197,13 @@ function UserRequest() {
       );
 
       setIsModalBlock(false);
+      message.warning(`${driver.name} has been blocked!`);
     } catch (err) {
       console.error("Block failed", err);
+      message.error("Failed to block user. Try again!");
     }
   };
 
-  // const handleConfirmAccept = async (driver) => {
-  //   try {
-  //     await acceptDriver({
-  //       id: driver.originalId,
-  //       driverId: driver.userId,
-  //     }).unwrap();
-  //     console.log("Driver accepted!");
-  //     setIsModalAccept(false);
-  //   } catch (err) {
-  //     console.error("Accept failed", err);
-  //   }
-  // };
-
-  // const handleConfirmBlock = async (driver) => {
-  //   try {
-  //     await blockDriver({
-  //       id: driver.originalId,
-  //       driverId: driver.userId,
-  //     }).unwrap();
-  //     console.log("Driver blocked!");
-  //     setIsModalBlock(false);
-  //   } catch (err) {
-  //     console.error("Block failed", err);
-  //   }
-  // };
 
   if (isLoading) {
     return (
@@ -278,37 +259,45 @@ function UserRequest() {
                     <td className="px-4 my-3 text-white">{user.name}</td>
                     <td className="px-4 my-3 text-white">{user.email}</td>
                     <td className="px-4 my-3 text-white">{user.date}</td>
-                    <td className="flex px-4 py-3 space-x-4">
+                    <td className="flex items-center px-4 py-3 space-x-4">
+                      {/* View Button (always shown) */}
                       <button
                         onClick={() => handleViewUser(user)}
                         className="text-white hover:text-gray-200"
                       >
                         <EyeOutlined size={20} />
                       </button>
-                      {apiData.isVerifyDriverLicense &&
-                      apiData.isVerifyDriverNid &&
-                      apiData.isReadyToDrive ? (
-                        <button
-                          onClick={() => handleAcceptUser(user)}
-                          className={`hover:text-gray-200 ${
-                            user.status === "accepted"
-                              ? "text-green-600"
-                              : "text-green-400"
-                          }`}
-                        >
-                          <IoIosCheckmarkCircle size={20} />
-                        </button>
+
+                      {/* Ready or Not */}
+                      {user.isVerifyDriverLicense &&
+                      user.isVerifyDriverNid &&
+                      user.isReadyToDrive ? (
+                        <>
+                          {/* Accept Button */}
+                          <button
+                            onClick={() => handleAcceptUser(user)}
+                            className={`hover:text-gray-200 ${
+                              user.status === "accepted"
+                                ? "text-green-600"
+                                : "text-green-400"
+                            }`}
+                          >
+                            <IoIosCheckmarkCircle size={20} />
+                          </button>
+
+                          {/* Block Button */}
+                          <button
+                            onClick={() => handleBlockUser(user)}
+                            className="text-red-500 hover:text-red-300"
+                          >
+                            <MdBlock size={20} />
+                          </button>
+                        </>
                       ) : (
-                        <span className="px-2 text-white bg-green-600 rounded-lg">
-                          Verified
+                        <span className="px-3 py-1 text-sm font-semibold text-white bg-red-600 rounded-lg animate-pulse">
+                          Not Ready
                         </span>
                       )}
-                      <button
-                        onClick={() => handleBlockUser(user)}
-                        className="text-red-500 hover:text-red-300"
-                      >
-                        <MdBlock size={20} />
-                      </button>
                     </td>
                   </tr>
                 ))
@@ -323,38 +312,36 @@ function UserRequest() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {filteredUsers.length > pageSize && (
-          <div className="flex justify-end py-4">
+        {/* Pagination outside table */}
+        <div className="flex justify-end py-4">
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 mx-1 text-black rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <IoIosArrowBack size={20} />
+          </button>
+          {[...Array(totalPages)].map((_, index) => (
             <button
-              onClick={() => onPageChange(currentPage - 1)}
-              className="px-3 py-1 mx-1 text-black rounded-full disabled:opacity-50"
-              disabled={currentPage === 1}
+              key={index}
+              onClick={() => onPageChange(index + 1)}
+              className={`px-3 py-1 mx-1 rounded-full  ${
+                currentPage === index + 1
+                  ? " text-red-500"
+                  : "bg-white text-black hover:bg-gray-100"
+              }`}
             >
-              <IoIosArrowBack size={20} />
+              {index + 1}
             </button>
-            {[...Array(totalPages)].map((_, index) => (
-              <button
-                key={index}
-                onClick={() => onPageChange(index + 1)}
-                className={`px-3 py-1 mx-1 rounded-full ${
-                  currentPage === index + 1
-                    ? "text-red-500"
-                    : "bg-transparent text-black"
-                }`}
-              >
-                {index + 1}
-              </button>
-            ))}
-            <button
-              onClick={() => onPageChange(currentPage + 1)}
-              className="px-3 py-1 mx-1 text-black rounded-full disabled:opacity-50"
-              disabled={currentPage === totalPages}
-            >
-              <IoIosArrowForward size={20} />
-            </button>
-          </div>
-        )}
+          ))}
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 mx-1 text-black rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <IoIosArrowForward size={20} />
+          </button>
+        </div>
       </div>
 
       {/* ================= Modals ================= */}
