@@ -33,40 +33,6 @@ function UserRequest() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  // useEffect(() => {
-  //   if (apiData && Array.isArray(apiData)) {
-  //     const transformed = apiData.map((item, index) => ({
-  //       id: `${String(index + 1).padStart(2, "0")}`,
-  //       name: item.userId?.name || "N/A",
-  //       email: item.userId?.email || "N/A",
-  //       phoneNumber: item.userId?.phoneNumber || "N/A",
-  //       date: new Date(item.createdAt).toLocaleDateString("en-GB", {
-  //         day: "2-digit",
-  //         month: "short",
-  //         year: "numeric",
-  //       }),
-  //       accType: "Driver",
-  //       driverLocation: item.driverLocation || "N/A",
-  //       vehicleNumber: item.vehicleNumber || "N/A",
-  //       truckSize: item.truckSize || "N/A",
-  //       loadCapacity: item.loadCapacity || "N/A",
-  //       truckcategories: item.driverSelectedTruck?.truckcategories || "N/A",
-  //       truckPhoto: item.driverSelectedTruck?.photo,
-  //       picCities: item.picCities || "N/A",
-  //       picState: item.picState || "N/A",
-  //       driverLicense: item.driverLicense,
-  //       driverNidCard: item.driverNidCard,
-  //       isVerifyDriverLicense: item.isVerifyDriverLicense,
-  //       isVerifyDriverNid: item.isVerifyDriverNid,
-  //       isReadyToDrive: item.isReadyToDrive,
-  //       coordinates: item.autoDetectLocation || ["N/A", "N/A"],
-  //       originalId: item._id,
-  //       userId: item.userId?._id,
-  //     }));
-  //     setTransformedUsers(transformed);
-  //     setFilteredUsers(transformed);
-  //   }
-  // }, [apiData]);
 
   useEffect(() => {
     if (apiData && Array.isArray(apiData)) {
