@@ -4,12 +4,15 @@ import { router } from "./router/Routes";
 import { RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import { store } from "./features/store";
-import { ConfigProvider } from "antd"; 
+import { ConfigProvider,App as AntdApp } from "antd"; 
 
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <ConfigProvider>
+      <AntdApp>
       <RouterProvider router={router} />
+      </AntdApp>
+        
     </ConfigProvider>
   </Provider>
 );

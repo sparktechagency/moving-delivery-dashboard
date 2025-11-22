@@ -26,7 +26,7 @@ export const authApi = createApi({
       }),
     }),
 
-     getMyProfile: builder.query({
+    getMyProfile: builder.query({
       query: () => ({
         url: "/v1/auth/myprofile",
         method: "GET",
@@ -51,11 +51,25 @@ export const authApi = createApi({
         };
       },
     }),
+
+    updatePhoto: builder.mutation({
+      query: (file) => {
+        const formData = new FormData();
+        formData.append("photo", file);
+
+        return {
+          url: "/v1/auth/update_my_profile",
+          method: "PATCH",
+          body: formData,
+        };
+      },
+    }),
   }),
 });
 
-export const { 
-  useSigninMutation, 
-  useUpdateProfileMutation ,
-  useGetMyProfileQuery
+export const {
+  useSigninMutation,
+  useUpdateProfileMutation,
+  useGetMyProfileQuery,
+  useUpdatePhotoMutation
 } = authApi;

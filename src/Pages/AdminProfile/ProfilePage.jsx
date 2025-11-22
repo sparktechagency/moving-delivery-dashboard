@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import ChangePass from "./ChangePass";
 import Profile from "./Profile";
 import admin from "../../assets/image/admin.jpg";
-import { useGetMyProfileQuery, useUpdateProfileMutation } from "../../features/api/authApi";
+import { useGetMyProfileQuery, useUpdatePhotoMutation, useUpdateProfileMutation } from "../../features/api/authApi";
 import { message } from "antd";
 import { BASE_URL } from "../../utils/api";
 
@@ -13,7 +13,12 @@ function ProfilePage() {
   const [activeTab, setActiveTab] = useState("profile");
 
   // Fetch user profile
-  const { data, refetch } = useGetMyProfileQuery();
+  // const { data, refetch } = useGetMyProfileQuery();
+  const { data, refetch } = useGetMyProfileQuery(undefined, {
+  refetchOnMountOrArgChange: true,
+  refetchOnFocus: true,
+  refetchOnReconnect: true,
+});
   const user = data?.data || {};
 
   // Local photo preview
@@ -21,6 +26,8 @@ function ProfilePage() {
 
   // Update API mutation (optional: you may remove if updating inside Profile component)
   const [updateProfile] = useUpdateProfileMutation();
+  const [updatePhoto] = useUpdatePhotoMutation();
+
 
   // Update profilePic when user changes
   useEffect(() => {
@@ -33,22 +40,27 @@ function ProfilePage() {
   }, [user]);
 
   // Handle photo update from child Profile component
-  const handlePhotoUpdate = async (file) => {
-    const formData = new FormData();
-    formData.append("photo", file);
+const handlePhotoUpdate = async (file) => {
+  try {
+    const res = await updatePhoto(file).unwrap();
 
-    try {
-      const res = await updateProfile(formData).unwrap();
-      const updatedPhoto = res?.data?.photo;
-      const finalPic = updatedPhoto.startsWith("http") ? updatedPhoto : `${BASE_URL}/${updatedPhoto}`;
-      setProfilePic(finalPic);
-      await refetch(); // refresh user data
-      message.success("Profile photo updated successfully!");
-    } catch (err) {
-      console.error(err);
-      message.error("Failed to update photo");
-    }
-  };
+    const updatedPhoto = res?.data?.photo;
+    const finalPic = updatedPhoto.startsWith("http")
+      ? updatedPhoto
+      : `${BASE_URL}/${updatedPhoto}`;
+
+    setProfilePic(`${finalPic}?t=${Date.now()}`);
+
+    await refetch();
+
+    message.success("Profile photo updated successfully!");
+  } catch (err) {
+    console.error(err);
+    message.error("Failed to update photo");
+  }
+};
+
+
 
   return (
     <div className="overflow-y-auto bg-[#52B5D1]">
