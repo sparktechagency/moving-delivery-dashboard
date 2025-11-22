@@ -6,10 +6,10 @@ import {
   IoIosCheckmarkCircle,
   IoMdClose,
 } from "react-icons/io";
-import { MdBlock } from "react-icons/md";
+import { MdDelete } from "react-icons/md";
 import {
   useAcceptDriverMutation,
-  useBlockDriverMutation,
+  useDeleteDriverMutation,
   useGetDriverQuery,
 } from "../../features/api/driverRequest";
 import { message } from "antd";
@@ -17,12 +17,9 @@ import { message } from "antd";
 function UserRequest() {
   const { data: responseData, error, isLoading } = useGetDriverQuery();
   const [acceptDriver] = useAcceptDriverMutation();
-  const [blockDriver] = useBlockDriverMutation();
+  const [deleteDriver] = useDeleteDriverMutation();
 
   const apiData = responseData?.data?.all_driver_verification;
-
-  // console.log(responseData);
-
   const [transformedUsers, setTransformedUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalAccept, setIsModalAccept] = useState(false);
@@ -32,7 +29,6 @@ function UserRequest() {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
-
 
   useEffect(() => {
     if (apiData && Array.isArray(apiData)) {
@@ -63,14 +59,13 @@ function UserRequest() {
         coordinates: item.autoDetectLocation || ["N/A", "N/A"],
         originalId: item._id,
         userId: item.userId?._id,
-
-        // ➕ NEW FIELD
         status: "pending",
       }));
       setTransformedUsers(transformed);
       setFilteredUsers(transformed);
     }
   }, [apiData]);
+
   const handleSearch = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
@@ -101,19 +96,19 @@ function UserRequest() {
     setIsModalOpen(true);
   };
 
-  const handleBlockUser = (user) => {
-    setSelectedUser(user);
-    setIsModalBlock(true);
-  };
-
   const handleAcceptUser = (user) => {
     setSelectedUser(user);
     setIsModalAccept(true);
   };
 
+  const handleBlockUser = (user) => {
+    setSelectedUser(user);
+    setIsModalBlock(true);
+  };
+
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
-  // ========= Accept ==========
+  // ========= Accept ==========  
   const handleConfirmAccept = async (driver) => {
     try {
       await acceptDriver({
@@ -140,35 +135,30 @@ function UserRequest() {
       message.error("Failed to accept user. Try again!");
     }
   };
-  // console.log(driver.originalId)
 
-  // ========= Block ==========
-  const handleConfirmBlock = async (driver) => {
-    try {
-      await blockDriver({
-        id: driver.originalId,
-        driverId: driver.userId,
-      }).unwrap();
+  // ========= Delete ==========  
+ // Corrected handleConfirmDelete function
+const handleConfirmDelete = async (driver) => {
+  try {
+    // Make sure the delete mutation is called correctly
+    await deleteDriver({ id: driver.originalId }).unwrap();
 
-      // Reset back to pending (or "blocked" if you prefer)
-      setTransformedUsers((prev) =>
-        prev.map((u) =>
-          u.originalId === driver.originalId ? { ...u, status: "pending" } : u
-        )
-      );
-      setFilteredUsers((prev) =>
-        prev.map((u) =>
-          u.originalId === driver.originalId ? { ...u, status: "pending" } : u
-        )
-      );
+    // Update the state by removing the deleted user from the list
+    setTransformedUsers((prev) =>
+      prev.filter((u) => u.originalId !== driver.originalId)
+    );
+    setFilteredUsers((prev) =>
+      prev.filter((u) => u.originalId !== driver.originalId)
+    );
 
-      setIsModalBlock(false);
-      message.warning(`${driver.name} has been blocked!`);
-    } catch (err) {
-      console.error("Block failed", err);
-      message.error("Failed to block user. Try again!");
-    }
-  };
+    // Close the modal after successful deletion
+    setIsModalBlock(false); // This is used for the block modal but can be reused here
+    message.success(`${driver.name} has been deleted successfully!`);
+  } catch (err) {
+    console.error("Delete failed", err);
+    message.error("Failed to delete user. Try again!");
+  }
+};
 
 
   if (isLoading) {
@@ -226,7 +216,6 @@ function UserRequest() {
                     <td className="px-4 my-3 text-white">{user.email}</td>
                     <td className="px-4 my-3 text-white">{user.date}</td>
                     <td className="flex items-center px-4 py-3 space-x-4">
-                      {/* View Button (always shown) */}
                       <button
                         onClick={() => handleViewUser(user)}
                         className="text-white hover:text-gray-200"
@@ -234,29 +223,20 @@ function UserRequest() {
                         <EyeOutlined size={20} />
                       </button>
 
-                      {/* Ready or Not */}
-                      {user.isVerifyDriverLicense &&
-                      user.isVerifyDriverNid &&
-                      user.isReadyToDrive ? (
+                      {user.isVerifyDriverLicense && user.isVerifyDriverNid && user.isReadyToDrive ? (
                         <>
-                          {/* Accept Button */}
                           <button
                             onClick={() => handleAcceptUser(user)}
-                            className={`hover:text-gray-200 ${
-                              user.status === "accepted"
-                                ? "text-green-600"
-                                : "text-green-400"
-                            }`}
+                            className={`hover:text-gray-200 ${user.status === "accepted" ? "text-green-600" : "text-green-400"}`}
                           >
                             <IoIosCheckmarkCircle size={20} />
                           </button>
 
-                          {/* Block Button */}
                           <button
-                            onClick={() => handleBlockUser(user)}
+                            onClick={() => handleConfirmDelete(user)}
                             className="text-red-500 hover:text-red-300"
                           >
-                            <MdBlock size={20} />
+                            <MdDelete size={20} />
                           </button>
                         </>
                       ) : (
@@ -278,7 +258,7 @@ function UserRequest() {
           </table>
         </div>
 
-        {/* Pagination outside table */}
+        {/* Pagination */}
         <div className="flex justify-end py-4">
           <button
             onClick={() => onPageChange(currentPage - 1)}
@@ -291,11 +271,7 @@ function UserRequest() {
             <button
               key={index}
               onClick={() => onPageChange(index + 1)}
-              className={`px-3 py-1 mx-1 rounded-full  ${
-                currentPage === index + 1
-                  ? " text-red-500"
-                  : "bg-white text-black hover:bg-gray-100"
-              }`}
+              className={`px-3 py-1 mx-1 rounded-full ${currentPage === index + 1 ? "text-red-500" : "bg-white text-black hover:bg-gray-100"}`}
             >
               {index + 1}
             </button>
@@ -310,7 +286,7 @@ function UserRequest() {
         </div>
       </div>
 
-      {/* ================= Modals ================= */}
+      {/* Modals */}
       {/* User Details Modal */}
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -459,34 +435,6 @@ function UserRequest() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Block Modal */}
-      {isModalBlock && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md overflow-hidden bg-white rounded-md">
-            <div className="relative">
-              <button
-                onClick={() => setIsModalBlock(false)}
-                className="absolute p-1 rounded-full right-2 top-2 bg-white/10 hover:bg-white/20"
-              >
-                <IoMdClose />
-              </button>
-              <div className="flex flex-col items-center justify-center py-12 space-y-4 px-11">
-                <h2 className="text-xl font-bold text-[#39b4c0]">
-                  Are You Sure You Want to Block?
-                </h2>
-                <p>Do you want to Block {selectedUser.name}'s profile?</p>
-                <button
-                  onClick={() => handleConfirmBlock(selectedUser)}
-                  className="px-8 py-3 font-semibold text-white bg-red-500 rounded-md"
-                >
-                  Confirm Block
-                </button>
               </div>
             </div>
           </div>

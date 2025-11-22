@@ -32,17 +32,12 @@ export const driverApi = createApi({
       }),
     }),
 
-    blockDriver: builder.mutation({
-      query: ({ id, driverId }) => ({
-        url: `/v1/driver_verification/driver_verification/${id}`,
-        method: "PATCH",
-        body: {
-          driverId,
-          isVerifyDriverLicense: false,
-          isVerifyDriverNid: false,
-          isReadyToDrive: false,
-        },
+    deleteDriver: builder.mutation({
+      query: ({ id }) => ({
+        url: `/v1/driver_verification/delete_driver_verification_request/${id}`,
+        method: "DELETE",
       }),
+      invalidatesTags: ["Driver"],
     }),
   }),
 });
@@ -50,5 +45,5 @@ export const driverApi = createApi({
 export const {
   useGetDriverQuery,
   useAcceptDriverMutation,
-  useBlockDriverMutation,
+  useDeleteDriverMutation,
 } = driverApi;
