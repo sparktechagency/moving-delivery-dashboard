@@ -12,12 +12,23 @@ import {
   useDeleteDriverMutation,
   useGetDriverQuery,
 } from "../../features/api/driverRequest";
-import { message } from "antd";
+import { message, Modal, Tag } from "antd";
 
 function UserRequest() {
   const { data: responseData, error, isLoading } = useGetDriverQuery();
   const [acceptDriver] = useAcceptDriverMutation();
   const [deleteDriver] = useDeleteDriverMutation();
+
+  console.log(responseData);
+
+  const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
+  const showModalDelete = () => {
+    setIsModalOpenDelete(true);
+  };
+
+  const handleCancelDelete = () => {
+    setIsModalOpenDelete(false);
+  };
 
   const apiData = responseData?.data?.all_driver_verification;
   const [transformedUsers, setTransformedUsers] = useState([]);
@@ -101,14 +112,14 @@ function UserRequest() {
     setIsModalAccept(true);
   };
 
-  const handleBlockUser = (user) => {
-    setSelectedUser(user);
-    setIsModalBlock(true);
-  };
+  // const handleBlockUser = (user) => {
+  //   setSelectedUser(user);
+  //   setIsModalBlock(true);
+  // };
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
-  // ========= Accept ==========  
+  // ========= Accept ==========
   const handleConfirmAccept = async (driver) => {
     try {
       await acceptDriver({
@@ -136,30 +147,30 @@ function UserRequest() {
     }
   };
 
-  // ========= Delete ==========  
- // Corrected handleConfirmDelete function
-const handleConfirmDelete = async (driver) => {
-  try {
-    // Make sure the delete mutation is called correctly
-    await deleteDriver({ id: driver.originalId }).unwrap();
+  // ========= Delete ==========
+  // Corrected handleConfirmDelete function
+  const handleConfirmDelete = async (driver) => {
+    try {
+      // Make sure the delete mutation is called correctly
+      await deleteDriver({ id: driver.originalId }).unwrap();
 
-    // Update the state by removing the deleted user from the list
-    setTransformedUsers((prev) =>
-      prev.filter((u) => u.originalId !== driver.originalId)
-    );
-    setFilteredUsers((prev) =>
-      prev.filter((u) => u.originalId !== driver.originalId)
-    );
+      // Update the state by removing the deleted user from the list
+      setTransformedUsers((prev) =>
+        prev.filter((u) => u.originalId !== driver.originalId)
+      );
+      setFilteredUsers((prev) =>
+        prev.filter((u) => u.originalId !== driver.originalId)
+      );
 
-    // Close the modal after successful deletion
-    setIsModalBlock(false); // This is used for the block modal but can be reused here
-    message.success(`${driver.name} has been deleted successfully!`);
-  } catch (err) {
-    console.error("Delete failed", err);
-    message.error("Failed to delete user. Try again!");
-  }
-};
-
+      // Close the modal after successful deletion
+      setIsModalBlock(false); // This is used for the block modal but can be reused here
+      setIsModalOpenDelete(false);
+      message.success(`${driver.name} has been deleted successfully!`);
+    } catch (err) {
+      console.error("Delete failed", err);
+      message.error("Failed to delete user. Try again!");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -223,11 +234,80 @@ const handleConfirmDelete = async (driver) => {
                         <EyeOutlined size={20} />
                       </button>
 
-                      {user.isVerifyDriverLicense && user.isVerifyDriverNid && user.isReadyToDrive ? (
+                      {user.isReadyToDrive ? (
+                        <>
+                          {!user.isReadyToDrive ? (
+                            <button
+                              onClick={() => handleAcceptUser(user)}
+                              className={`hover:text-gray-200 ${
+                                user.isReadyToDrive
+                                  ? "text-green-600 cursor-not-allowed"
+                                  : "text-green-400"
+                              }`}
+                            >
+                              {user.isReadyToDrive ? (
+                                <div>Ready</div>
+                              ) : (
+                                <IoIosCheckmarkCircle size={20} />
+                              )}
+                            </button>
+                          ) : (
+                            <Tag color="green" size="large">
+                              Ready
+                            </Tag>
+                          )}
+
+                          <button
+                            onClick={() => {
+                              setSelectedUser(user); // store clicked user
+                              showModalDelete(); // open modal
+                            }}
+                            // onClick={() => handleConfirmDelete(user)}
+                            className="text-red-500 hover:text-red-300"
+                          >
+                            <MdDelete size={20} />
+                          </button>
+                        </>
+                      ) : (
                         <>
                           <button
                             onClick={() => handleAcceptUser(user)}
-                            className={`hover:text-gray-200 ${user.status === "accepted" ? "text-green-600" : "text-green-400"}`}
+                            className={`hover:text-gray-200 ${
+                              user.status === "accepted"
+                                ? "text-green-600"
+                                : "text-green-400"
+                            }`}
+                          >
+                            <IoIosCheckmarkCircle size={20} />
+                          </button>
+
+                          <span className="px-3 py-1 text-sm font-semibold text-white bg-red-600 rounded-lg ">
+                            Not Ready
+                          </span>
+
+                          <button
+                            onClick={() => {
+                              setSelectedUser(user); // store clicked user
+                              showModalDelete(); // open modal
+                            }}
+                            // onClick={() => handleConfirmDelete(user)}
+                            className="text-red-500 hover:text-red-300"
+                          >
+                            <MdDelete size={20} />
+                          </button>
+                        </>
+                      )}
+                      {/* {user.isVerifyDriverLicense &&
+                      user.isVerifyDriverNid &&
+                      user.isReadyToDrive ? (
+                        <>
+                          <button
+                            onClick={() => handleAcceptUser(user)}
+                            className={`hover:text-gray-200 ${
+                              user.status === "accepted"
+                                ? "text-green-600"
+                                : "text-green-400"
+                            }`}
                           >
                             <IoIosCheckmarkCircle size={20} />
                           </button>
@@ -243,7 +323,7 @@ const handleConfirmDelete = async (driver) => {
                         <span className="px-3 py-1 text-sm font-semibold text-white bg-red-600 rounded-lg animate-pulse">
                           Not Ready
                         </span>
-                      )}
+                      )} */}
                     </td>
                   </tr>
                 ))
@@ -271,7 +351,11 @@ const handleConfirmDelete = async (driver) => {
             <button
               key={index}
               onClick={() => onPageChange(index + 1)}
-              className={`px-3 py-1 mx-1 rounded-full ${currentPage === index + 1 ? "text-red-500" : "bg-white text-black hover:bg-gray-100"}`}
+              className={`px-3 py-1 mx-1 rounded-full ${
+                currentPage === index + 1
+                  ? "text-red-500"
+                  : "bg-white text-black hover:bg-gray-100"
+              }`}
             >
               {index + 1}
             </button>
@@ -285,6 +369,17 @@ const handleConfirmDelete = async (driver) => {
           </button>
         </div>
       </div>
+
+      <Modal
+        title="Delete Drive"
+        closable={{ "aria-label": "Custom Close Button" }}
+        open={isModalOpenDelete}
+        onOk={() => handleConfirmDelete(selectedUser)}
+        onCancel={handleCancelDelete}
+        centered
+      >
+        <p>Are you sure you want to delete this user?</p>
+      </Modal>
 
       {/* Modals */}
       {/* User Details Modal */}
