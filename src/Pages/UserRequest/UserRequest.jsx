@@ -19,7 +19,7 @@ function UserRequest() {
   const [acceptDriver] = useAcceptDriverMutation();
   const [deleteDriver] = useDeleteDriverMutation();
 
-  console.log(responseData);
+  // console.log(responseData);
 
   const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
   const showModalDelete = () => {
@@ -120,52 +120,83 @@ function UserRequest() {
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
   // ========= Accept ==========
+  // const handleConfirmAccept = async (driver) => {
+  //   try {
+  //     await acceptDriver({
+  //       id: driver.originalId,
+  //       driverId: driver.userId,
+  //     }).unwrap();
+
+  //     // Update state locally
+  //     setTransformedUsers((prev) =>
+  //       prev.map((u) =>
+  //         u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
+  //       )
+  //     );
+  //     setFilteredUsers((prev) =>
+  //       prev.map((u) =>
+  //         u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
+  //       )
+  //     );
+
+  //     setIsModalAccept(false);
+  //     message.success(`${driver.name} has been accepted successfully!`);
+  //   } catch (err) {
+  //     console.error("Accept failed", err);
+  //     message.error("Failed to accept user. Try again!");
+  //   }
+  // };
+
   const handleConfirmAccept = async (driver) => {
-    try {
-      await acceptDriver({
-        id: driver.originalId,
-        driverId: driver.userId,
-      }).unwrap();
+  try {
+    await acceptDriver({
+      id: driver.originalId,
+      driverId: driver.userId,
+    }).unwrap();
 
-      // Update state locally
-      setTransformedUsers((prev) =>
-        prev.map((u) =>
-          u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
-        )
-      );
-      setFilteredUsers((prev) =>
-        prev.map((u) =>
-          u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
-        )
-      );
+    // Update state locally (optional, since we reload)
+    setTransformedUsers((prev) =>
+      prev.map((u) =>
+        u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
+      )
+    );
+    setFilteredUsers((prev) =>
+      prev.map((u) =>
+        u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
+      )
+    );
 
-      setIsModalAccept(false);
-      message.success(`${driver.name} has been accepted successfully!`);
-    } catch (err) {
-      console.error("Accept failed", err);
-      message.error("Failed to accept user. Try again!");
-    }
-  };
+    setIsModalAccept(false);
+    message.success(`${driver.name} has been accepted successfully!`);
+
+    // ✅ Auto reload page after success
+    setTimeout(() => {
+      window.location.reload();
+    }, 500); // small delay for message to show
+  } catch (err) {
+    console.error("Accept failed", err);
+    message.error("Failed to accept user. Try again!");
+  }
+};
+
 
   // ========= Delete ==========
-  // Corrected handleConfirmDelete function
-  const handleConfirmDelete = async (driver) => {
-    try {
-      // Make sure the delete mutation is called correctly
-      await deleteDriver({ id: driver.originalId }).unwrap();
 
-      // Update the state by removing the deleted user from the list
+  const handleConfirmDelete = async () => {
+    try {
+      const res = await deleteDriver({ id: selectedUser.originalId }).unwrap();
+      console.log("DELETE RESPONSE:", res);
+      await deleteDriver({ id: selectedUser.originalId }).unwrap();
+
       setTransformedUsers((prev) =>
-        prev.filter((u) => u.originalId !== driver.originalId)
+        prev.filter((u) => u.originalId !== selectedUser.originalId)
       );
       setFilteredUsers((prev) =>
-        prev.filter((u) => u.originalId !== driver.originalId)
+        prev.filter((u) => u.originalId !== selectedUser.originalId)
       );
 
-      // Close the modal after successful deletion
-      setIsModalBlock(false); // This is used for the block modal but can be reused here
       setIsModalOpenDelete(false);
-      message.success(`${driver.name} has been deleted successfully!`);
+      message.success(`${selectedUser.name} has been deleted successfully!`);
     } catch (err) {
       console.error("Delete failed", err);
       message.error("Failed to delete user. Try again!");
@@ -246,7 +277,7 @@ function UserRequest() {
                               }`}
                             >
                               {user.isReadyToDrive ? (
-                                <div>Ready</div>
+                                <div></div>
                               ) : (
                                 <IoIosCheckmarkCircle size={20} />
                               )}
@@ -259,10 +290,10 @@ function UserRequest() {
 
                           <button
                             onClick={() => {
-                              setSelectedUser(user); // store clicked user
+                              setSelectedUser(user);
                               showModalDelete(); // open modal
                             }}
-                            // onClick={() => handleConfirmDelete(user)}
+                            // onClick={() => handleBlockUser(user)}
                             className="text-red-500 hover:text-red-300"
                           >
                             <MdDelete size={20} />
@@ -280,50 +311,18 @@ function UserRequest() {
                           >
                             <IoIosCheckmarkCircle size={20} />
                           </button>
-
-                          <span className="px-3 py-1 text-sm font-semibold text-white bg-red-600 rounded-lg ">
-                            Not Ready
-                          </span>
 
                           <button
                             onClick={() => {
                               setSelectedUser(user); // store clicked user
                               showModalDelete(); // open modal
                             }}
-                            // onClick={() => handleConfirmDelete(user)}
                             className="text-red-500 hover:text-red-300"
                           >
                             <MdDelete size={20} />
                           </button>
                         </>
                       )}
-                      {/* {user.isVerifyDriverLicense &&
-                      user.isVerifyDriverNid &&
-                      user.isReadyToDrive ? (
-                        <>
-                          <button
-                            onClick={() => handleAcceptUser(user)}
-                            className={`hover:text-gray-200 ${
-                              user.status === "accepted"
-                                ? "text-green-600"
-                                : "text-green-400"
-                            }`}
-                          >
-                            <IoIosCheckmarkCircle size={20} />
-                          </button>
-
-                          <button
-                            onClick={() => handleConfirmDelete(user)}
-                            className="text-red-500 hover:text-red-300"
-                          >
-                            <MdDelete size={20} />
-                          </button>
-                        </>
-                      ) : (
-                        <span className="px-3 py-1 text-sm font-semibold text-white bg-red-600 rounded-lg animate-pulse">
-                          Not Ready
-                        </span>
-                      )} */}
                     </td>
                   </tr>
                 ))
@@ -371,10 +370,9 @@ function UserRequest() {
       </div>
 
       <Modal
-        title="Delete Drive"
-        closable={{ "aria-label": "Custom Close Button" }}
+        title="Delete Driver"
         open={isModalOpenDelete}
-        onOk={() => handleConfirmDelete(selectedUser)}
+        onOk={handleConfirmDelete}
         onCancel={handleCancelDelete}
         centered
       >

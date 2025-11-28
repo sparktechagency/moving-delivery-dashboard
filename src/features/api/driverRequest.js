@@ -13,12 +13,19 @@ export const driverApi = createApi({
       return headers;
     },
   }),
+
+  tagTypes: ["Driver"],  // ✅ MUST ADD THIS
+
   endpoints: (builder) => ({
+
+    // -------------------- GET DRIVERS --------------------
     getDriver: builder.query({
       query: () =>
         "/v1/driver_verification/find_by_all__driver_verfiction_admin",
+      providesTags: ["Driver"],      // ✅ ADD THIS
     }),
-    // Accept driver (all true)
+
+    // -------------------- ACCEPT DRIVER --------------------
     acceptDriver: builder.mutation({
       query: ({ id, driverId }) => ({
         url: `/v1/driver_verification/driver_verification/${id}`,
@@ -30,14 +37,16 @@ export const driverApi = createApi({
           isReadyToDrive: true,
         },
       }),
+      invalidatesTags: ["Driver"],   // 🟢 Refresh list
     }),
 
+    // -------------------- DELETE DRIVER --------------------
     deleteDriver: builder.mutation({
       query: ({ id }) => ({
         url: `/v1/driver_verification/delete_driver_verification_request/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Driver"],
+      invalidatesTags: ["Driver"],    // 🟢 This NOW works!
     }),
   }),
 });
