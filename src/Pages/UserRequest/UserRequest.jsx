@@ -12,14 +12,14 @@ import {
   useDeleteDriverMutation,
   useGetDriverQuery,
 } from "../../features/api/driverRequest";
-import { message, Modal, Tag } from "antd";
+import { Image, message, Modal, Tag } from "antd";
 
 function UserRequest() {
   const { data: responseData, error, isLoading } = useGetDriverQuery();
   const [acceptDriver] = useAcceptDriverMutation();
   const [deleteDriver] = useDeleteDriverMutation();
 
-  // console.log(responseData);
+  console.log(responseData);
 
   const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
   const showModalDelete = () => {
@@ -119,66 +119,37 @@ function UserRequest() {
 
   const totalPages = Math.ceil(filteredUsers.length / pageSize);
 
-  // ========= Accept ==========
-  // const handleConfirmAccept = async (driver) => {
-  //   try {
-  //     await acceptDriver({
-  //       id: driver.originalId,
-  //       driverId: driver.userId,
-  //     }).unwrap();
-
-  //     // Update state locally
-  //     setTransformedUsers((prev) =>
-  //       prev.map((u) =>
-  //         u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
-  //       )
-  //     );
-  //     setFilteredUsers((prev) =>
-  //       prev.map((u) =>
-  //         u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
-  //       )
-  //     );
-
-  //     setIsModalAccept(false);
-  //     message.success(`${driver.name} has been accepted successfully!`);
-  //   } catch (err) {
-  //     console.error("Accept failed", err);
-  //     message.error("Failed to accept user. Try again!");
-  //   }
-  // };
-
   const handleConfirmAccept = async (driver) => {
-  try {
-    await acceptDriver({
-      id: driver.originalId,
-      driverId: driver.userId,
-    }).unwrap();
+    try {
+      await acceptDriver({
+        id: driver.originalId,
+        driverId: driver.userId,
+      }).unwrap();
 
-    // Update state locally (optional, since we reload)
-    setTransformedUsers((prev) =>
-      prev.map((u) =>
-        u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
-      )
-    );
-    setFilteredUsers((prev) =>
-      prev.map((u) =>
-        u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
-      )
-    );
+      // Update state locally (optional, since we reload)
+      setTransformedUsers((prev) =>
+        prev.map((u) =>
+          u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
+        )
+      );
+      setFilteredUsers((prev) =>
+        prev.map((u) =>
+          u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
+        )
+      );
 
-    setIsModalAccept(false);
-    message.success(`${driver.name} has been accepted successfully!`);
+      setIsModalAccept(false);
+      message.success(`${driver.name} has been accepted successfully!`);
 
-    // ✅ Auto reload page after success
-    setTimeout(() => {
-      window.location.reload();
-    }, 500); // small delay for message to show
-  } catch (err) {
-    console.error("Accept failed", err);
-    message.error("Failed to accept user. Try again!");
-  }
-};
-
+      // ✅ Auto reload page after success
+      setTimeout(() => {
+        window.location.reload();
+      }, 500); // small delay for message to show
+    } catch (err) {
+      console.error("Accept failed", err);
+      message.error("Failed to accept user. Try again!");
+    }
+  };
 
   // ========= Delete ==========
 
@@ -491,40 +462,62 @@ function UserRequest() {
                   <h3 className="pb-2 text-lg font-bold text-black border-b">
                     Verification Status
                   </h3>
+
                   <div className="grid grid-cols-2 gap-4 mt-4">
+                    {/* Driver License */}
                     <div>
                       <h4 className="font-semibold text-black">
                         Driver License
                       </h4>
-                      <p className="text-gray-700">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            selectedUser.isVerifyDriverLicense
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {selectedUser.isVerifyDriverLicense
-                            ? "Verified"
-                            : "Not Verified"}
-                        </span>
-                      </p>
+
+                      {selectedUser.driverLicense ? (
+                        <Image
+                          src={`http://13.39.40.82:8001/${selectedUser.driverLicense}`}
+                          alt="Driver License"
+                          className="w-full mt-2 rounded-md shadow-md"
+                          preview={{
+                            mask: "Click to Zoom",
+                          }}
+                        />
+                      ) : (
+                        <p className="mt-2 text-gray-700">No Image</p>
+                      )}
                     </div>
+
+                    {/* NID Card */}
                     <div>
                       <h4 className="font-semibold text-black">NID Card</h4>
-                      <p className="text-gray-700">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs ${
-                            selectedUser.isVerifyDriverNid
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {selectedUser.isVerifyDriverNid
-                            ? "Verified"
-                            : "Not Verified"}
-                        </span>
-                      </p>
+
+                      {selectedUser.driverNidCard ? (
+                        <Image
+                          src={`http://13.39.40.82:8001/${selectedUser.driverNidCard}`}
+                          alt="NID Card"
+                          className="w-full mt-2 rounded-md shadow-md"
+                          preview={{
+                            mask: "Click to Zoom",
+                          }}
+                        />
+                      ) : (
+                        <p className="mt-2 text-gray-700">No Image</p>
+                      )}
+                    </div>
+
+                    {/* Truck Photo */}
+                    <div>
+                      <h4 className="font-semibold text-black">Truck Photo</h4>
+
+                      {selectedUser.truckPhoto ? (
+                        <Image
+                          src={`http://13.39.40.82:8001/${selectedUser.truckPhoto}`}
+                          alt="Truck"
+                          className="w-full mt-2 rounded-md shadow-md"
+                          preview={{
+                            mask: "Click to Zoom",
+                          }}
+                        />
+                      ) : (
+                        <p className="mt-2 text-gray-700">No Image</p>
+                      )}
                     </div>
                   </div>
                 </div>
