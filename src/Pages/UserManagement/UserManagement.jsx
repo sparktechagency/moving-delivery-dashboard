@@ -2,60 +2,63 @@ import React, { useEffect, useState } from "react";
 import { EyeOutlined } from "@ant-design/icons";
 import { IoIosArrowBack, IoIosArrowForward, IoMdClose } from "react-icons/io";
 import { MdBlock } from "react-icons/md";
-import { useGetAllUsersQuery, useUpdateUserStatusMutation } from "../../features/api/userManagementApi";
-import { notification } from "antd"; // Import notification from Ant Design
+import {
+  useGetAllUsersQuery,
+  useUpdateUserStatusMutation,
+} from "../../features/api/userManagementApi";
+import { notification } from "antd";
 
 function UserManagement() {
-  const { data, isLoading, error } = useGetAllUsersQuery();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const pageSize = 10; // Match your API's limit
+
+  // Fetch users with pagination parameters
+  const { data, isLoading, error, refetch } = useGetAllUsersQuery({
+    page: currentPage,
+    limit: pageSize,
+    search: searchTerm,
+  });
+
   const [updateUserStatus] = useUpdateUserStatusMutation();
-  const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 14;
 
-  useEffect(() => {
-    const allUsers = data?.data?.all_users || [];
-    if (Array.isArray(allUsers)) {
-      const formattedUsers = allUsers.map((user, index) => ({
-        id: user.id,
-        name: user.name || "No Name",
-        email: user.email || "No Email",
-        date: new Date(user.createdAt).toLocaleDateString("en-US", {
+  const users = data?.data?.all_users || [];
+  const meta = data?.data?.meta || { total: 0, totalPage: 1, page: 1 };
+
+  // Format users for display
+  const formattedUsers = users.map((user, index) => ({
+    id: user.id,
+    name: user.name || "No Name",
+    email: user.email || "No Email",
+    date: user.createdAt
+      ? new Date(user.createdAt).toLocaleDateString("en-US", {
           day: "2-digit",
           month: "short",
           year: "numeric",
-        }),
-        accType: user.role || "User",
-        status: user.status || "blocked", // Assuming 'blocked' as default
-      }));
-      setUsers(formattedUsers);
-      setFilteredUsers(formattedUsers);
-    }
-  }, [data]);
+        })
+      : "N/A",
+    accType: user.role || "User",
+    status: user.status || "blocked",
+    location: user.location || "N/A",
+    isVerify: user.isVerify,
+    phoneNumber: user.phoneNumber,
+  }));
 
   const handleSearch = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
-    if (term.trim() === "") {
-      setFilteredUsers(users);
-    } else {
-      const filtered = users.filter(
-        (user) =>
-          user.name.toLowerCase().includes(term.toLowerCase()) ||
-          user.email.toLowerCase().includes(term.toLowerCase()) ||
-          user.accType.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredUsers(filtered);
-    }
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on search
   };
 
-  const indexOfLastUser = currentPage * pageSize;
-  const indexOfFirstUser = indexOfLastUser - pageSize;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  // Trigger search after typing stops (debounce)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      refetch();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, refetch]);
 
   const onPageChange = (page) => {
     setCurrentPage(page);
@@ -70,16 +73,17 @@ function UserManagement() {
     const newStatus = user.status === "isProgress" ? "blocked" : "isProgress";
     try {
       await updateUserStatus({ userId: user.id, status: newStatus }).unwrap();
-      const updatedUsers = users.map((u) =>
-        u.id === user.id ? { ...u, status: newStatus } : u
-      );
-      setUsers(updatedUsers);
-      setFilteredUsers(updatedUsers);
 
-      // Show Ant Design notification
+      // Refetch the current page to update the data
+      refetch();
+
       notification.success({
-        message: `${user.name} has been ${newStatus === 'blocked' ? 'blocked' : 'unblocked'}`,
-        description: `User ${newStatus === 'blocked' ? 'blocked' : 'unblocked'} successfully!`,
+        message: `${user.name} has been ${
+          newStatus === "blocked" ? "blocked" : "unblocked"
+        }`,
+        description: `User ${
+          newStatus === "blocked" ? "blocked" : "unblocked"
+        } successfully!`,
         placement: "topRight",
       });
     } catch (err) {
@@ -92,7 +96,46 @@ function UserManagement() {
     }
   };
 
-  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  // Generate page numbers with ellipsis
+  const getPageNumbers = () => {
+    const pages = [];
+    const totalPages = meta.totalPage;
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
+  // Calculate display range
+  const startIndex = (currentPage - 1) * pageSize + 1;
+  const endIndex = Math.min(currentPage * pageSize, meta.total);
 
   if (isLoading)
     return <div className="mt-10 text-center">Loading users...</div>;
@@ -110,7 +153,7 @@ function UserManagement() {
           <div className="w-72">
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search by name, email, or role..."
               value={searchTerm}
               onChange={handleSearch}
               className="w-full px-4 py-2 rounded-md"
@@ -127,71 +170,117 @@ function UserManagement() {
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-left">Acc Type</th>
+                <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left">Action</th>
               </tr>
             </thead>
             <tbody>
-              {currentUsers.map((user, index) => (
-                <tr key={index} className="bg-[#4BADC9]">
-                  <td className="px-4 text-white">
-                    {(index + 1).toString().padStart(2, "0")}
-                  </td> {/* Format serial number */}
-                  <td className="px-4 text-white">{user.name}</td>
-                  <td className="px-4 text-white">{user.email}</td>
-                  <td className="px-4 text-white">{user.date}</td>
-                  <td className="px-4 text-white">{user.accType}</td>
-                  <td className="flex px-4 py-3 space-x-4">
-                    <button
-                      onClick={() => handleViewUser(user)}
-                      className="text-white hover:text-gray-200"
-                    >
-                      <EyeOutlined size={20} />
-                    </button>
-                    <button
-                      onClick={() => handleBlockUnblockUser(user)}
-                      className={`text-${
-                        user.status === "isProgress" ? "green" : "red"
-                      }-500 hover:text-${
-                        user.status === "isProgress" ? "green" : "red"
-                      }-300`}
-                    >
-                      <MdBlock size={20} />
-                    </button>
+              {formattedUsers.length > 0 ? (
+                formattedUsers.map((user, index) => (
+                  <tr
+                    key={user.id}
+                    className="bg-[#4BADC9] border-b border-[#3a9bb3]"
+                  >
+                    <td className="px-4 py-3 text-white">
+                      {(startIndex + index).toString().padStart(2, "0")}
+                    </td>
+                    <td className="px-4 py-3 text-white">{user.name}</td>
+                    <td className="px-4 py-3 text-white">{user.email}</td>
+                    <td className="px-4 py-3 text-white">{user.date}</td>
+                    <td className="px-4 py-3 text-white capitalize">
+                      {user.accType}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          user.status === "isProgress"
+                            ? "bg-green-500 text-white"
+                            : "bg-red-500 text-white"
+                        }`}
+                      >
+                        {user.status === "isProgress" ? "Active" : "Blocked"}
+                      </span>
+                    </td>
+                    <td className="flex px-4 py-3 space-x-4">
+                      <button
+                        onClick={() => handleViewUser(user)}
+                        className="text-white transition-colors hover:text-gray-200"
+                        title="View User"
+                      >
+                        <EyeOutlined size={20} />
+                      </button>
+                      <button
+                        onClick={() => handleBlockUnblockUser(user)}
+                        className={`transition-colors ${
+                          user.status === "isProgress"
+                            ? "text-red-400 hover:text-red-300"
+                            : "text-green-400 hover:text-green-300"
+                        }`}
+                        title={
+                          user.status === "isProgress"
+                            ? "Block User"
+                            : "Unblock User"
+                        }
+                      >
+                        <MdBlock size={20} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="px-4 py-8 text-center text-white">
+                    No users found
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
-        <div className="flex justify-end py-4">
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            className="px-3 py-1 mx-1 text-black rounded-full disabled:opacity-50"
-            disabled={currentPage === 1}
-          >
-            <IoIosArrowBack size={20} />
-          </button>
-          {[...Array(totalPages)].map((_, index) => (
+        {/* Enhanced Pagination */}
+        <div className="flex items-center justify-between px-6 py-4 bg-[#E0F2F7]">
+          <div className="text-sm text-gray-600">
+            Showing {formattedUsers.length > 0 ? startIndex : 0} to {endIndex}{" "}
+            of {meta.total} users
+          </div>
+
+          <div className="flex items-center space-x-2">
             <button
-              key={index}
-              onClick={() => onPageChange(index + 1)}
-              className={`px-3 py-1 mx-1 rounded-full ${
-                currentPage === index + 1
-                  ? "text-red-500"
-                  : "bg-transparent text-black"
-              }`}
+              onClick={() => onPageChange(currentPage - 1)}
+              className="flex items-center justify-center w-8 h-8 transition-colors bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentPage === 1}
+              title="Previous page"
             >
-              {index + 1}
+              <IoIosArrowBack size={18} />
             </button>
-          ))}
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            className="px-3 py-1 mx-1 text-black rounded-full disabled:opacity-50"
-            disabled={currentPage === totalPages}
-          >
-            <IoIosArrowForward size={20} />
-          </button>
+
+            {getPageNumbers().map((page, index) => (
+              <button
+                key={index}
+                onClick={() => typeof page === "number" && onPageChange(page)}
+                className={`min-w-[32px] h-8 px-2 rounded-md transition-colors ${
+                  currentPage === page
+                    ? "bg-[#4BADC9] text-white font-semibold"
+                    : page === "..."
+                    ? "bg-transparent text-gray-400 cursor-default"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                }`}
+                disabled={page === "..."}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              className="flex items-center justify-center w-8 h-8 transition-colors bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentPage === meta.totalPage}
+              title="Next page"
+            >
+              <IoIosArrowForward size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -217,12 +306,29 @@ function UserManagement() {
                 <div className="flex flex-col gap-4">
                   <div className="flex justify-between">
                     <div className="w-2/3">
-                      <h3 className="font-bold text-black ">Email</h3>
+                      <h3 className="font-bold text-black">Email</h3>
                       <p className="text-gray-700">{selectedUser.email}</p>
                     </div>
                     <div className="w-1/3">
                       <h3 className="font-bold text-black">Account Type</h3>
-                      <p className="text-gray-700">{selectedUser.accType}</p>
+                      <p className="text-gray-700 capitalize">
+                        {selectedUser.accType}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <div className="w-2/3">
+                      <h3 className="font-bold text-black">Phone Number</h3>
+                      <p className="text-gray-700">
+                        {selectedUser.phoneNumber}
+                      </p>
+                    </div>
+                    <div className="w-1/3">
+                      <h3 className="font-bold text-black">Verified</h3>
+                      <p className="text-gray-700">
+                        {selectedUser.isVerify ? "Yes" : "No"}
+                      </p>
                     </div>
                   </div>
 
@@ -233,8 +339,25 @@ function UserManagement() {
                     </div>
                     <div className="w-1/3">
                       <h3 className="font-bold text-black">Location</h3>
-                      <p className="text-gray-700">USA</p>
+                      <p className="text-gray-700">
+                        {selectedUser.location || "N/A"}
+                      </p>
                     </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-bold text-black">Status</h3>
+                    <p
+                      className={`inline-block px-3 py-1 mt-1 text-sm rounded-full ${
+                        selectedUser.status === "isProgress"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {selectedUser.status === "isProgress"
+                        ? "Active"
+                        : "Blocked"}
+                    </p>
                   </div>
                 </div>
 

@@ -15,90 +15,77 @@ import {
 import { Image, message, Modal, Tag } from "antd";
 
 function UserRequest() {
-  const { data: responseData, error, isLoading } = useGetDriverQuery();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const pageSize = 10;
+
+  // Fetch drivers with pagination parameters
+  const {
+    data: responseData,
+    error,
+    isLoading,
+    refetch,
+  } = useGetDriverQuery({
+    page: currentPage,
+    limit: pageSize,
+    search: searchTerm,
+  });
+
   const [acceptDriver] = useAcceptDriverMutation();
   const [deleteDriver] = useDeleteDriverMutation();
 
-  console.log(responseData);
-
   const [isModalOpenDelete, setIsModalOpenDelete] = useState(false);
-  const showModalDelete = () => {
-    setIsModalOpenDelete(true);
-  };
-
-  const handleCancelDelete = () => {
-    setIsModalOpenDelete(false);
-  };
-
-  const apiData = responseData?.data?.all_driver_verification;
-  const [transformedUsers, setTransformedUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalAccept, setIsModalAccept] = useState(false);
-  const [isModalBlock, setIsModalBlock] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
 
-  useEffect(() => {
-    if (apiData && Array.isArray(apiData)) {
-      const transformed = apiData.map((item, index) => ({
-        id: `${String(index + 1).padStart(2, "0")}`,
-        name: item.userId?.name || "N/A",
-        email: item.userId?.email || "N/A",
-        phoneNumber: item.userId?.phoneNumber || "N/A",
-        date: new Date(item.createdAt).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        }),
-        accType: "Driver",
-        driverLocation: item.driverLocation || "N/A",
-        vehicleNumber: item.vehicleNumber || "N/A",
-        truckSize: item.truckSize || "N/A",
-        loadCapacity: item.loadCapacity || "N/A",
-        truckcategories: item.driverSelectedTruck?.truckcategories || "N/A",
-        truckPhoto: item.driverSelectedTruck?.photo,
-        picCities: item.picCities || "N/A",
-        picState: item.picState || "N/A",
-        driverLicense: item.driverLicense,
-        driverNidCard: item.driverNidCard,
-        isVerifyDriverLicense: item.isVerifyDriverLicense,
-        isVerifyDriverNid: item.isVerifyDriverNid,
-        isReadyToDrive: item.isReadyToDrive,
-        coordinates: item.autoDetectLocation || ["N/A", "N/A"],
-        originalId: item._id,
-        userId: item.userId?._id,
-        status: "pending",
-      }));
-      setTransformedUsers(transformed);
-      setFilteredUsers(transformed);
-    }
-  }, [apiData]);
+  const apiData = responseData?.data?.all_driver_verification || [];
+  const meta = responseData?.data?.meta || { total: 0, totalPage: 1, page: 1 };
+
+  // Transform API data for display
+  const transformedUsers = apiData.map((item, index) => ({
+    id: `${String((currentPage - 1) * pageSize + index + 1).padStart(2, "0")}`,
+    name: item.userId?.name || "N/A",
+    email: item.userId?.email || "N/A",
+    phoneNumber: item.userId?.phoneNumber || "N/A",
+    date: new Date(item.createdAt).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
+    accType: "Driver",
+    driverLocation: item.driverLocation || "N/A",
+    vehicleNumber: item.vehicleNumber || "N/A",
+    truckSize: item.truckSize || "N/A",
+    loadCapacity: item.loadCapacity || "N/A",
+    truckcategories: item.driverSelectedTruck?.truckcategories || "N/A",
+    truckPhoto: item.driverSelectedTruck?.photo,
+    picCities: item.picCities || "N/A",
+    picState: item.picState || "N/A",
+    driverLicense: item.driverLicense,
+    driverNidCard: item.driverNidCard,
+    isVerifyDriverLicense: item.isVerifyDriverLicense,
+    isVerifyDriverNid: item.isVerifyDriverNid,
+    isReadyToDrive: item.isReadyToDrive,
+    coordinates: item.autoDetectLocation || ["N/A", "N/A"],
+    originalId: item._id,
+    userId: item.userId?._id,
+    status: "pending",
+  }));
 
   const handleSearch = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
-    if (term.trim() === "") {
-      setFilteredUsers(transformedUsers);
-    } else {
-      const filtered = transformedUsers.filter(
-        (user) =>
-          user.name.toLowerCase().includes(term.toLowerCase()) ||
-          user.email.toLowerCase().includes(term.toLowerCase()) ||
-          user.accType.toLowerCase().includes(term.toLowerCase()) ||
-          user.driverLocation.toLowerCase().includes(term.toLowerCase()) ||
-          user.vehicleNumber.toLowerCase().includes(term.toLowerCase())
-      );
-      setFilteredUsers(filtered);
-    }
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on search
   };
 
-  const indexOfLastUser = currentPage * pageSize;
-  const indexOfFirstUser = indexOfLastUser - pageSize;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      refetch();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, refetch]);
 
   const onPageChange = (page) => setCurrentPage(page);
 
@@ -112,12 +99,50 @@ function UserRequest() {
     setIsModalAccept(true);
   };
 
-  // const handleBlockUser = (user) => {
-  //   setSelectedUser(user);
-  //   setIsModalBlock(true);
-  // };
+  const showModalDelete = () => {
+    setIsModalOpenDelete(true);
+  };
 
-  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  const handleCancelDelete = () => {
+    setIsModalOpenDelete(false);
+  };
+
+  // Generate page numbers with ellipsis
+  const getPageNumbers = () => {
+    const pages = [];
+    const totalPages = meta.totalPage;
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
 
   const handleConfirmAccept = async (driver) => {
     try {
@@ -126,53 +151,35 @@ function UserRequest() {
         driverId: driver.userId,
       }).unwrap();
 
-      // Update state locally (optional, since we reload)
-      setTransformedUsers((prev) =>
-        prev.map((u) =>
-          u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
-        )
-      );
-      setFilteredUsers((prev) =>
-        prev.map((u) =>
-          u.originalId === driver.originalId ? { ...u, status: "accepted" } : u
-        )
-      );
-
       setIsModalAccept(false);
       message.success(`${driver.name} has been accepted successfully!`);
 
-      // ✅ Auto reload page after success
-      setTimeout(() => {
-        window.location.reload();
-      }, 500); // small delay for message to show
+      // Refetch current page
+      refetch();
     } catch (err) {
       console.error("Accept failed", err);
       message.error("Failed to accept user. Try again!");
     }
   };
 
-  // ========= Delete ==========
-
   const handleConfirmDelete = async () => {
     try {
-      const res = await deleteDriver({ id: selectedUser.originalId }).unwrap();
-      console.log("DELETE RESPONSE:", res);
       await deleteDriver({ id: selectedUser.originalId }).unwrap();
-
-      setTransformedUsers((prev) =>
-        prev.filter((u) => u.originalId !== selectedUser.originalId)
-      );
-      setFilteredUsers((prev) =>
-        prev.filter((u) => u.originalId !== selectedUser.originalId)
-      );
 
       setIsModalOpenDelete(false);
       message.success(`${selectedUser.name} has been deleted successfully!`);
+
+      // Refetch current page
+      refetch();
     } catch (err) {
       console.error("Delete failed", err);
       message.error("Failed to delete user. Try again!");
     }
   };
+
+  // Calculate display range
+  const startIndex = (currentPage - 1) * pageSize + 1;
+  const endIndex = Math.min(currentPage * pageSize, meta.total);
 
   if (isLoading) {
     return (
@@ -200,7 +207,7 @@ function UserRequest() {
           <div className="w-72">
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search by name, email, location..."
               value={searchTerm}
               onChange={handleSearch}
               className="w-full px-4 py-2 rounded-md"
@@ -217,90 +224,64 @@ function UserRequest() {
                 <th className="px-4 py-3 text-left">Name</th>
                 <th className="px-4 py-3 text-left">Email</th>
                 <th className="px-4 py-3 text-left">Date</th>
+                <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left">Action</th>
               </tr>
             </thead>
             <tbody>
-              {currentUsers.length > 0 ? (
-                currentUsers.map((user, index) => (
-                  <tr key={index} className="bg-[#4BADC9]">
-                    <td className="px-4 my-3 text-white">{user.id}</td>
-                    <td className="px-4 my-3 text-white">{user.name}</td>
-                    <td className="px-4 my-3 text-white">{user.email}</td>
-                    <td className="px-4 my-3 text-white">{user.date}</td>
+              {transformedUsers.length > 0 ? (
+                transformedUsers.map((user, index) => (
+                  <tr
+                    key={user.originalId}
+                    className="bg-[#4BADC9] border-b border-[#3a9bb3]"
+                  >
+                    <td className="px-4 py-3 text-white">{user.id}</td>
+                    <td className="px-4 py-3 text-white">{user.name}</td>
+                    <td className="px-4 py-3 text-white">{user.email}</td>
+                    <td className="px-4 py-3 text-white">{user.date}</td>
+                    <td className="px-4 py-3">
+                      {user.isReadyToDrive ? (
+                        <Tag color="green">Ready to Drive</Tag>
+                      ) : (
+                        <Tag color="orange">Pending</Tag>
+                      )}
+                    </td>
                     <td className="flex items-center px-4 py-3 space-x-4">
                       <button
                         onClick={() => handleViewUser(user)}
-                        className="text-white hover:text-gray-200"
+                        className="text-white transition-colors hover:text-gray-200"
+                        title="View Details"
                       >
                         <EyeOutlined size={20} />
                       </button>
 
-                      {user.isReadyToDrive ? (
-                        <>
-                          {!user.isReadyToDrive ? (
-                            <button
-                              onClick={() => handleAcceptUser(user)}
-                              className={`hover:text-gray-200 ${
-                                user.isReadyToDrive
-                                  ? "text-green-600 cursor-not-allowed"
-                                  : "text-green-400"
-                              }`}
-                            >
-                              {user.isReadyToDrive ? (
-                                <div></div>
-                              ) : (
-                                <IoIosCheckmarkCircle size={20} />
-                              )}
-                            </button>
-                          ) : (
-                            <Tag color="green" size="large">
-                              Ready
-                            </Tag>
-                          )}
-
-                          <button
-                            onClick={() => {
-                              setSelectedUser(user);
-                              showModalDelete(); // open modal
-                            }}
-                            // onClick={() => handleBlockUser(user)}
-                            className="text-red-500 hover:text-red-300"
-                          >
-                            <MdDelete size={20} />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => handleAcceptUser(user)}
-                            className={`hover:text-gray-200 ${
-                              user.status === "accepted"
-                                ? "text-green-600"
-                                : "text-green-400"
-                            }`}
-                          >
-                            <IoIosCheckmarkCircle size={20} />
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setSelectedUser(user); // store clicked user
-                              showModalDelete(); // open modal
-                            }}
-                            className="text-red-500 hover:text-red-300"
-                          >
-                            <MdDelete size={20} />
-                          </button>
-                        </>
+                      {!user.isReadyToDrive && (
+                        <button
+                          onClick={() => handleAcceptUser(user)}
+                          className="text-green-400 transition-colors hover:text-green-300"
+                          title="Accept Driver"
+                        >
+                          <IoIosCheckmarkCircle size={20} />
+                        </button>
                       )}
+
+                      <button
+                        onClick={() => {
+                          setSelectedUser(user);
+                          showModalDelete();
+                        }}
+                        className="text-red-400 transition-colors hover:text-red-300"
+                        title="Delete Driver"
+                      >
+                        <MdDelete size={20} />
+                      </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="py-4 text-center text-white">
-                    No users found.
+                  <td colSpan="6" className="py-8 text-center text-white">
+                    No driver requests found.
                   </td>
                 </tr>
               )}
@@ -308,49 +289,68 @@ function UserRequest() {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="flex justify-end py-4">
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 mx-1 text-black rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <IoIosArrowBack size={20} />
-          </button>
-          {[...Array(totalPages)].map((_, index) => (
+        {/* Enhanced Pagination */}
+        <div className="flex items-center justify-between px-6 py-4 bg-[#E0F2F7]">
+          <div className="text-sm text-gray-600">
+            Showing {transformedUsers.length > 0 ? startIndex : 0} to {endIndex}{" "}
+            of {meta.total} driver requests
+          </div>
+
+          <div className="flex items-center space-x-2">
             <button
-              key={index}
-              onClick={() => onPageChange(index + 1)}
-              className={`px-3 py-1 mx-1 rounded-full ${
-                currentPage === index + 1
-                  ? "text-red-500"
-                  : "bg-white text-black hover:bg-gray-100"
-              }`}
+              onClick={() => onPageChange(currentPage - 1)}
+              className="flex items-center justify-center w-8 h-8 transition-colors bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentPage === 1}
+              title="Previous page"
             >
-              {index + 1}
+              <IoIosArrowBack size={18} />
             </button>
-          ))}
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 mx-1 text-black rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <IoIosArrowForward size={20} />
-          </button>
+
+            {getPageNumbers().map((page, index) => (
+              <button
+                key={index}
+                onClick={() => typeof page === "number" && onPageChange(page)}
+                className={`min-w-[32px] h-8 px-2 rounded-md transition-colors ${
+                  currentPage === page
+                    ? "bg-[#4BADC9] text-white font-semibold"
+                    : page === "..."
+                    ? "bg-transparent text-gray-400 cursor-default"
+                    : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                }`}
+                disabled={page === "..."}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              className="flex items-center justify-center w-8 h-8 transition-colors bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={currentPage === meta.totalPage}
+              title="Next page"
+            >
+              <IoIosArrowForward size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Delete Confirmation Modal */}
       <Modal
         title="Delete Driver"
         open={isModalOpenDelete}
         onOk={handleConfirmDelete}
         onCancel={handleCancelDelete}
         centered
+        okText="Delete"
+        okButtonProps={{ danger: true }}
       >
-        <p>Are you sure you want to delete this user?</p>
+        <p>
+          Are you sure you want to delete <strong>{selectedUser?.name}</strong>?
+          This action cannot be undone.
+        </p>
       </Modal>
 
-      {/* Modals */}
       {/* User Details Modal */}
       {isModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -460,7 +460,7 @@ function UserRequest() {
                 {/* Verification Status */}
                 <div className="mt-6">
                   <h3 className="pb-2 text-lg font-bold text-black border-b">
-                    Verification Status
+                    Verification Documents
                   </h3>
 
                   <div className="grid grid-cols-2 gap-4 mt-4">
@@ -469,7 +469,6 @@ function UserRequest() {
                       <h4 className="font-semibold text-black">
                         Driver License
                       </h4>
-
                       {selectedUser.driverLicense ? (
                         <Image
                           src={`http://13.39.40.82:8001/${selectedUser.driverLicense}`}
@@ -487,7 +486,6 @@ function UserRequest() {
                     {/* NID Card */}
                     <div>
                       <h4 className="font-semibold text-black">NID Card</h4>
-
                       {selectedUser.driverNidCard ? (
                         <Image
                           src={`http://13.39.40.82:8001/${selectedUser.driverNidCard}`}
@@ -505,7 +503,6 @@ function UserRequest() {
                     {/* Truck Photo */}
                     <div>
                       <h4 className="font-semibold text-black">Truck Photo</h4>
-
                       {selectedUser.truckPhoto ? (
                         <Image
                           src={`http://13.39.40.82:8001/${selectedUser.truckPhoto}`}
@@ -542,10 +539,13 @@ function UserRequest() {
                 <h2 className="text-xl font-bold text-[#39b4c0]">
                   Are You Sure?
                 </h2>
-                <p>Do you want to Accept {selectedUser.name}'s profile?</p>
+                <p className="text-center text-gray-600">
+                  Do you want to accept <strong>{selectedUser.name}</strong>'s
+                  driver profile? They will be able to start accepting rides.
+                </p>
                 <button
                   onClick={() => handleConfirmAccept(selectedUser)}
-                  className="bg-[#52B5D1] py-3 px-8 rounded-md font-semibold text-white"
+                  className="bg-[#52B5D1] py-3 px-8 rounded-md font-semibold text-white hover:bg-[#4BADC9] transition-colors"
                 >
                   Confirm Accept
                 </button>

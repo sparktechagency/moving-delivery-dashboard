@@ -14,15 +14,26 @@ export const driverApi = createApi({
     },
   }),
 
-  tagTypes: ["Driver"],  // ✅ MUST ADD THIS
+  tagTypes: ["Driver"],
 
   endpoints: (builder) => ({
-
-    // -------------------- GET DRIVERS --------------------
+    // -------------------- GET DRIVERS WITH PAGINATION --------------------
     getDriver: builder.query({
-      query: () =>
-        "/v1/driver_verification/find_by_all__driver_verfiction_admin",
-      providesTags: ["Driver"],      // ✅ ADD THIS
+      query: ({ page = 1, limit = 10, search = '' } = {}) => {
+        // Build query parameters
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        });
+        
+        // Add search parameter if provided
+        if (search && search.trim() !== '') {
+          params.append('search', search.trim());
+        }
+        
+        return `/v1/driver_verification/find_by_all__driver_verfiction_admin?${params.toString()}`;
+      },
+      providesTags: ["Driver"],
     }),
 
     // -------------------- ACCEPT DRIVER --------------------
@@ -37,7 +48,7 @@ export const driverApi = createApi({
           isReadyToDrive: true,
         },
       }),
-      invalidatesTags: ["Driver"],   // 🟢 Refresh list
+      invalidatesTags: ["Driver"],
     }),
 
     // -------------------- DELETE DRIVER --------------------
@@ -46,7 +57,7 @@ export const driverApi = createApi({
         url: `/v1/driver_verification/delete_driver_verification_request/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Driver"],    // 🟢 This NOW works!
+      invalidatesTags: ["Driver"],
     }),
   }),
 });

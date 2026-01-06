@@ -6,24 +6,24 @@ import { useGetAllPaymentsQuery } from "../../features/api/allPayment";
 import { TbArrowsRightLeft } from "react-icons/tb";
 
 function Earnings() {
-  const { data, isLoading, isError } = useGetAllPaymentsQuery({
-    page: 1,
-    limit: 10,
-  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const pageSize = 10; // Match your API limit
 
-  // console.log(data);
+  // Fetch data based on current page
+  const { data, isLoading, isError } = useGetAllPaymentsQuery({
+    page: currentPage,
+    limit: pageSize,
+  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalBlock, setIsModalBlock] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 14;
 
-  // Use a useEffect hook to update filteredUsers when data is fetched
+  // Update filteredUsers when data changes
   useEffect(() => {
-    if (data && data.data && data.data.payments) {
+    if (data?.data?.payments) {
       setFilteredUsers(data.data.payments);
     }
   }, [data]);
@@ -31,40 +31,31 @@ function Earnings() {
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Something went wrong!</p>;
 
-  // for user search functionality
- const handleSearch = (e) => {
-  const term = e.target.value;
-  setSearchTerm(term);
+  // Search functionality - only filters current page
+  const handleSearch = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
 
-  if (data?.data?.payments) {
-    if (term.trim() === "") {
-      setFilteredUsers(data.data.payments);
-    } else {
-      const filtered = data.data.payments.filter((user) => {
-        const name = user.payable_name?.toLowerCase() || "";
-        const email = user.payable_email?.toLowerCase() || "";
-
-        return (
-          name.includes(term.toLowerCase()) ||
-          email.includes(term.toLowerCase())
-        );
-      });
-
-      setFilteredUsers(filtered);
+    if (data?.data?.payments) {
+      if (term.trim() === "") {
+        setFilteredUsers(data.data.payments);
+      } else {
+        const filtered = data.data.payments.filter((user) => {
+          const name = user.payable_name?.toLowerCase() || "";
+          const email = user.payable_email?.toLowerCase() || "";
+          return (
+            name.includes(term.toLowerCase()) ||
+            email.includes(term.toLowerCase())
+          );
+        });
+        setFilteredUsers(filtered);
+      }
     }
-  }
-
-  setCurrentPage(1);
-};
-
-
-  // for pagination functionality
-  const indexOfLastUser = currentPage * pageSize;
-  const indexOfFirstUser = indexOfLastUser - pageSize;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+  };
 
   const onPageChange = (page) => {
     setCurrentPage(page);
+    setSearchTerm(""); // Clear search when changing pages
   };
 
   const handleViewUser = (user) => {
@@ -77,7 +68,11 @@ function Earnings() {
     setIsModalBlock(true);
   };
 
-  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  // Get total pages from API meta
+  const totalPages = data?.data?.meta?.totalPage || 1;
+
+  // Use filtered users directly (no slicing needed - API handles pagination)
+  const currentUsers = filteredUsers;
 
   return (
     <>
@@ -132,9 +127,9 @@ function Earnings() {
             </thead>
             <tbody>
               {currentUsers.map((user, index) => (
-                <tr key={index} className="bg-[#4BADC9]">
+                <tr key={user._id || index} className="bg-[#4BADC9]">
                   <td className="px-4 text-white">
-                    {index + 1 + indexOfFirstUser}
+                    {index + 1 + (currentPage - 1) * pageSize}
                   </td>
                   <td className="px-4 text-white">{user.payable_name}</td>
                   <td className="px-4 text-white">{user.payable_email}</td>
@@ -147,13 +142,9 @@ function Earnings() {
                   <td className="px-4 text-white">
                     {Number(user.adminAmount).toFixed(2)} $
                   </td>
-
                   <td className="px-4 text-white">
                     {Number(user.driverAmount).toFixed(2)} $
                   </td>
-                  {/* <td className="px-4 text-white">
-                    {user.driverId}
-                  </td> */}
                   <td className="flex px-4 py-3 space-x-4">
                     <button
                       onClick={() => handleViewUser(user)}
@@ -161,7 +152,6 @@ function Earnings() {
                     >
                       <EyeOutlined size={20} />
                     </button>
-        
                   </td>
                 </tr>
               ))}
@@ -222,16 +212,10 @@ function Earnings() {
             <div className="space-y-6">
               {/* Top Profile Card */}
               <div className="flex items-center gap-4 p-4 bg-[#E0F2F7] rounded-lg">
-                {/* <img
-                  src={userImage}
-                  className="w-16 h-16 rounded-full border-2 border-[#39b4c0]"
-                  alt="User"
-                /> */}
                 <div>
                   <h3 className="text-lg font-bold">
                     {selectedUser.payable_name}
                   </h3>
-
                   <p className="text-gray-600">{selectedUser.payable_email}</p>
                   <p className="text-sm text-gray-500">
                     Account Type:{" "}
@@ -248,7 +232,8 @@ function Earnings() {
                 <div className="p-3 rounded-lg bg-gray-50">
                   <h4 className="font-semibold text-gray-700">Amount</h4>
                   <p className="text-gray-900">
-                    {selectedUser.price} {selectedUser.currency.toUpperCase()}
+                    {selectedUser.price}{" "}
+                    {selectedUser.currency?.toUpperCase() || "USD"}
                   </p>
                 </div>
                 <div className="p-3 rounded-lg bg-gray-50">
@@ -257,7 +242,6 @@ function Earnings() {
                   </h4>
                   <p className="text-gray-900">{selectedUser.paymentmethod}</p>
                 </div>
-
                 <div className="p-3 rounded-lg bg-gray-50">
                   <h4 className="font-semibold text-gray-700">
                     Payment Status
@@ -272,19 +256,16 @@ function Earnings() {
                     {selectedUser.payment_status}
                   </p>
                 </div>
-
                 <div className="p-3 rounded-lg bg-gray-50">
                   <h4 className="font-semibold text-gray-700">Date</h4>
                   <p className="text-gray-900">
                     {new Date(selectedUser.createdAt).toLocaleString()}
                   </p>
                 </div>
-
                 <div className="p-3 rounded-lg bg-gray-50">
                   <h4 className="font-semibold text-gray-700">Driver Amount</h4>
                   <p className="text-gray-900">{selectedUser.driverAmount}</p>
                 </div>
-
                 <div className="p-3 rounded-lg bg-gray-50">
                   <h4 className="font-semibold text-gray-700">Admin Amount</h4>
                   <p className="text-gray-900">{selectedUser.adminAmount}</p>
@@ -292,34 +273,42 @@ function Earnings() {
               </div>
 
               {/* Description */}
-              <div className="p-4 rounded-lg bg-gray-50">
-                <h4 className="font-semibold text-gray-700">Description</h4>
-                <p className="text-gray-900">{selectedUser.description}</p>
-              </div>
+              {selectedUser.description && (
+                <div className="p-4 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">Description</h4>
+                  <p className="text-gray-900">{selectedUser.description}</p>
+                </div>
+              )}
 
               {/* Extra Fields */}
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="p-3 rounded-lg bg-gray-50">
-                  <h4 className="font-semibold text-gray-700">
-                    Payment Intent
-                  </h4>
-                  <p className="text-gray-900 break-all">
-                    {selectedUser.payment_intent}
-                  </p>
-                </div>
-                <div className="p-3 rounded-lg bg-gray-50">
-                  <h4 className="font-semibold text-gray-700">Session ID</h4>
-                  <p className="text-gray-900 break-all">
-                    {selectedUser.sessionId}
-                  </p>
-                </div>
+                {selectedUser.payment_intent && (
+                  <div className="p-3 rounded-lg bg-gray-50">
+                    <h4 className="font-semibold text-gray-700">
+                      Payment Intent
+                    </h4>
+                    <p className="text-gray-900 break-all">
+                      {selectedUser.payment_intent}
+                    </p>
+                  </div>
+                )}
+                {selectedUser.sessionId && (
+                  <div className="p-3 rounded-lg bg-gray-50">
+                    <h4 className="font-semibold text-gray-700">Session ID</h4>
+                    <p className="text-gray-900 break-all">
+                      {selectedUser.sessionId}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Location */}
-              <div className="p-4 rounded-lg bg-gray-50">
-                <h4 className="font-semibold text-gray-700">Country</h4>
-                <p className="text-gray-900">{selectedUser.country}</p>
-              </div>
+              {selectedUser.country && (
+                <div className="p-4 rounded-lg bg-gray-50">
+                  <h4 className="font-semibold text-gray-700">Country</h4>
+                  <p className="text-gray-900">{selectedUser.country}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
