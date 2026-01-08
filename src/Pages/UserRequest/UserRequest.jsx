@@ -204,7 +204,7 @@ function UserRequest() {
     <>
       <div className="h-[calc(100vh-80px)] bg-[#E0F2F7] mt-16">
         {/* Header with search */}
-        <div className="bg-[#4BADC9] p-4 flex justify-end">
+        {/* <div className="bg-[#4BADC9] p-4 flex justify-end">
           <div className="w-72">
             <input
               type="text"
@@ -214,7 +214,7 @@ function UserRequest() {
               className="w-full px-4 py-2 rounded-md"
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Table */}
         <div className="overflow-x-auto bg-[#4BADC9]">
