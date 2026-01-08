@@ -13,6 +13,7 @@ import {
   useGetDriverQuery,
 } from "../../features/api/driverRequest";
 import { Image, message, Modal, Tag } from "antd";
+import { BASE_URL } from "../../utils/api";
 
 function UserRequest() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -471,7 +472,7 @@ function UserRequest() {
                       </h4>
                       {selectedUser.driverLicense ? (
                         <Image
-                          src={`http://13.39.40.82:8001/${selectedUser.driverLicense}`}
+                          src={`${BASE_URL}/${selectedUser.driverLicense}`}
                           alt="Driver License"
                           className="w-full mt-2 rounded-md shadow-md"
                           preview={{
@@ -488,7 +489,7 @@ function UserRequest() {
                       <h4 className="font-semibold text-black">NID Card</h4>
                       {selectedUser.driverNidCard ? (
                         <Image
-                          src={`http://13.39.40.82:8001/${selectedUser.driverNidCard}`}
+                          src={`${BASE_URL}/${selectedUser.driverNidCard}`}
                           alt="NID Card"
                           className="w-full mt-2 rounded-md shadow-md"
                           preview={{
@@ -505,7 +506,7 @@ function UserRequest() {
                       <h4 className="font-semibold text-black">Truck Photo</h4>
                       {selectedUser.truckPhoto ? (
                         <Image
-                          src={`http://13.39.40.82:8001/${selectedUser.truckPhoto}`}
+                          src={`${BASE_URL}/${selectedUser.truckPhoto}`}
                           alt="Truck"
                           className="w-full mt-2 rounded-md shadow-md"
                           preview={{

@@ -6,7 +6,8 @@ import {
   useGetAllUsersQuery,
   useUpdateUserStatusMutation,
 } from "../../features/api/userManagementApi";
-import { notification } from "antd";
+import { Image, notification } from "antd";
+import { BASE_URL } from "../../utils/api";
 
 function UserManagement() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,9 +42,13 @@ function UserManagement() {
       : "N/A",
     accType: user.role || "User",
     status: user.status || "blocked",
-    location: user.location || "N/A",
+    location: user.location,
+    driverLocation: user.driverLocation,
     isVerify: user.isVerify,
     phoneNumber: user.phoneNumber,
+    driverLicense: user.driverLicense,
+    driverNidCard: user.driverNidCard,
+    role: user.role,
   }));
 
   const handleSearch = (e) => {
@@ -340,7 +345,9 @@ function UserManagement() {
                     <div className="w-1/3">
                       <h3 className="font-bold text-black">Location</h3>
                       <p className="text-gray-700">
-                        {selectedUser.location || "N/A"}
+                        {selectedUser.location ||
+                          selectedUser.driverLocation ||
+                          "N/A"}
                       </p>
                     </div>
                   </div>
@@ -361,9 +368,50 @@ function UserManagement() {
                   </div>
                 </div>
 
-                <div className="mt-6">
-                  <h3 className="mb-2 font-semibold text-black">Attach File</h3>
-                </div>
+                {selectedUser?.role == "driver" &&
+                  (selectedUser?.driverLicense ||
+                    selectedUser?.driverNidCard) && (
+                    <div className="mt-6">
+                      <h3 className="mb-2 font-semibold text-black">
+                        Attach File
+                      </h3>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        {selectedUser?.driverNidCard ? (
+                          <div>
+                            <div>Nid Card </div>
+                            <Image
+                              src={
+                                selectedUser?.driverNidCard
+                                  ? `${BASE_URL}/${selectedUser.driverNidCard}`
+                                  : ""
+                              }
+                              alt="driverNidCard"
+                              className="!object-cover !object-center !h-[300px]"
+                            />
+                          </div>
+                        ) : (
+                          "N/A"
+                        )}
+                        {selectedUser?.driverLicense ? (
+                          <div>
+                            <div>Driving License</div>
+                            <Image
+                              src={
+                                selectedUser?.driverLicense
+                                  ? `${BASE_URL}/${selectedUser.driverLicense}`
+                                  : ""
+                              }
+                              alt="driverLicense"
+                              className="!object-cover !object-center !h-[300px]"
+                            />
+                          </div>
+                        ) : (
+                          "N/A"
+                        )}
+                      </div>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
